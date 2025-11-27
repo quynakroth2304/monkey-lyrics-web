@@ -11,103 +11,110 @@
         :root { --bg: #323437; --main: #e2b714; --sub: #646669; --text: #d1d0c5; --err: #ca4754; --box: #2c2e31; }
         body { background: var(--bg); color: var(--text); font-family: 'Roboto Mono', monospace; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; }
 
-        .logo { font-size: 20px; color: var(--sub); margin-bottom: 25px; }
-        .logo span { color: var(--main); }
+        .logo { font-size: 22px; color: var(--sub); margin-bottom: 40px; letter-spacing: 1px;}
+        .logo span { color: var(--main); font-weight: bold; }
 
-        /* TOOLBAR */
-        .toolbar { display: flex; gap: 20px; margin-bottom: 25px; background: #252525; padding: 10px 30px; border-radius: 8px; font-size: 14px; }
-        .tool-group { display: flex; gap: 15px; align-items: center; }
-        .divider { width: 1px; height: 20px; background: #444; }
-        .tool-item { cursor: pointer; color: var(--sub); transition: 0.2s; }
-        .tool-item:hover, .tool-item.active { color: var(--main); font-weight: bold; }
-        .tool-label { color: #555; font-size: 12px; margin-right: 5px; }
-
-        /* SEARCH */
-        #search-box { position: relative; width: 600px; text-align: center; }
-        #search-box input { background: transparent; border: none; border-bottom: 2px solid var(--sub); color: var(--text); font-size: 24px; padding: 10px; width: 100%; text-align: center; outline: none; }
-        #search-results { display: none; position: absolute; top: 100%; width: 100%; background: #222; border: 1px solid var(--main); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 50; margin-top: 5px; }
-        .search-item { padding: 12px; border-bottom: 1px solid #444; cursor: pointer; display: flex; justify-content: space-between; text-align: left; font-size: 15px; color: var(--text); }
+        /* SEARCH AREA */
+        #search-box { position: relative; width: 600px; text-align: center; margin-bottom: 20px;}
+        #search-box input { 
+            background: transparent; border: none; border-bottom: 2px solid var(--sub); 
+            color: var(--text); font-size: 26px; padding: 12px; width: 100%; text-align: center; outline: none; 
+            transition: 0.3s;
+        }
+        #search-box input:focus { border-bottom-color: var(--main); }
+        
+        #statusMsg { margin-top: 15px; color: var(--main); font-size: 14px; min-height: 20px; }
+        
+        /* LIST RESULT */
+        #search-results { 
+            display: none; position: absolute; top: 100%; left: 0; width: 100%; 
+            background: #222; border: 1px solid var(--main); border-radius: 8px; 
+            max-height: 350px; overflow-y: auto; z-index: 50; margin-top: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .search-item { padding: 15px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; text-align: left; color: var(--text); font-size: 16px;}
         .search-item:hover { background: #333; color: var(--main); }
 
         /* GAME UI */
         #game-area { display: none; width: 90%; max-width: 900px; flex-direction: column; align-items: center; }
-        #info-bar { font-size: 24px; color: var(--main); margin-bottom: 15px; font-weight: bold; }
-        #contentTitle { color: var(--sub); margin-bottom: 20px; font-size: 16px; }
         
-        #paragraph-display { width: 100%; height: 130px; background: #292929; border-radius: 8px; padding: 20px; font-size: 22px; color: var(--sub); overflow: hidden; position: relative; text-align: left; line-height: 1.6; margin-bottom: 30px; }
-        #paragraph-display::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: linear-gradient(transparent, #292929); }
-        .word { display: inline-block; margin-right: 10px; padding: 2px 5px; opacity: 0.5; }
-        .word.active { opacity: 1; color: #fff; background: #444; transform: scale(1.05); border-radius: 4px; }
+        /* Tiêu đề bài hát (Sẽ ẩn khi gõ) */
+        #contentTitle { color: var(--main); margin-bottom: 20px; font-size: 24px; font-weight: bold; transition: opacity 0.3s; }
+        
+        #info-bar { color: var(--sub); margin-bottom: 10px; font-size: 14px; }
+        
+        #paragraph-display { 
+            width: 100%; height: 140px; background: #292929; border-radius: 10px; padding: 25px; 
+            font-size: 24px; color: var(--sub); overflow: hidden; position: relative; text-align: left; line-height: 1.6; margin-bottom: 30px; 
+        }
+        #paragraph-display::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: linear-gradient(transparent, #292929); }
+        
+        .word { display: inline-block; margin-right: 12px; padding: 2px 5px; opacity: 0.5; }
+        .word.active { opacity: 1; color: #fff; background: #444; transform: scale(1.1); border-radius: 4px; font-weight: bold; }
         .word.done-correct { color: var(--main); opacity: 1; }
         .word.done-wrong { color: var(--err); text-decoration: line-through; opacity: 1; }
 
-        #input-container { width: 400px; height: 60px; background: var(--box); border: 2px solid var(--main); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        #typing-display { font-size: 30px; font-weight: bold; color: var(--text); white-space: pre; }
+        #input-container { 
+            width: 400px; height: 70px; background: var(--box); border: 2px solid var(--main); 
+            border-radius: 10px; display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 0 25px rgba(226,183,20,0.1); margin-bottom: 30px; 
+        }
+        #typing-display { font-size: 36px; font-weight: bold; color: var(--text); white-space: pre; }
         #hiddenInput { opacity: 0; position: absolute; }
 
-        #keyboard { transform: scale(0.85); display: flex; flex-direction: column; gap: 5px; align-items: center; }
-        .kb-row { display: flex; gap: 5px; }
-        .key { width: 48px; height: 48px; border: 1px solid var(--sub); border-radius: 5px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; font-size: 14px; }
-        .key.pressed { background: var(--main); color: #222; border-color: var(--main); transform: translateY(3px); }
-        .key.space { width: 300px; }
-
-        #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
-        .chart-box { width: 750px; height: 350px; background:#292929; padding:20px; border-radius:10px; margin-top:20px; }
-        .stat-val { font-size: 60px; color: var(--main); font-weight: bold; line-height: 1;}
-        .btn-restart { margin-top: 30px; padding: 12px 40px; background: var(--sub); border: none; color: #fff; font-size: 18px; cursor: pointer; border-radius: 6px; font-weight: bold; }
-        .btn-restart:hover { background: var(--main); color: #000; }
+        /* KEYBOARD (BÀN PHÍM ẢO - ĐÃ GIỮ LẠI) */
+        #keyboard { transform: scale(0.9); display: flex; flex-direction: column; gap: 6px; align-items: center; margin-top: 20px; }
+        .kb-row { display: flex; gap: 6px; }
+        .key { 
+            width: 50px; height: 50px; border: 1px solid var(--sub); border-radius: 6px; 
+            color: var(--sub); display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; transition: 0.05s; font-size: 14px; 
+        }
+        /* Hiệu ứng khi ấn phím */
+        .key.pressed { background: var(--main); color: #222; border-color: var(--main); transform: translateY(3px); box-shadow: 0 0 10px var(--main); }
         
-        #loading { display: none; color: var(--main); margin-top: 10px; }
+        .key.space { width: 300px; } 
+        .key.back { width: 70px; }
+        .key.tab { width: 70px; }
+        .key.caps { width: 80px; }
+        .key.enter { width: 90px; }
+        .key.shift { width: 100px; }
+
+        /* RESULT */
+        #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
+        .chart-box { width: 800px; height: 400px; background:#292929; padding:20px; border-radius:10px; margin-top:30px; }
+        .stat-val { font-size: 70px; color: var(--main); font-weight: bold; line-height: 1;}
+        .btn-restart { margin-top: 30px; padding: 15px 40px; background: var(--sub); border: none; color: #fff; font-size: 20px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .btn-restart:hover { background: var(--main); color: #000; }
     </style>
 </head>
 <body>
 
     <div class="logo">dành riêng cho <span>Nguyễn Thị Phương</span> ❤️</div>
 
-    <div class="toolbar" id="toolbar">
-        <div class="tool-group">
-            <span class="tool-item active" onclick="setMode('lyrics', this)"><i class="fas fa-music"></i> Lời Nhạc</span>
-            <span class="tool-item" onclick="setMode('quote', this)"><i class="fas fa-book"></i> Văn Mẫu AI</span>
-        </div>
-        <div class="divider"></div>
-        <div class="tool-group" id="time-options">
-            <span class="tool-label">Thời gian (s):</span>
-            <span class="tool-item" onclick="setOption('time', 15, this)">15</span>
-            <span class="tool-item" onclick="setOption('time', 30, this)">30</span>
-            <span class="tool-item active" onclick="setOption('time', 60, this)">60</span>
-            <span class="tool-item" onclick="setOption('time', 120, this)">120</span>
-        </div>
-        <div class="tool-group" id="word-options" style="display:none;">
-            <span class="tool-label">Độ dài (từ):</span>
-            <span class="tool-item active" onclick="setOption('word', 30, this)">30</span>
-            <span class="tool-item" onclick="setOption('word', 50, this)">50</span>
-            <span class="tool-item" onclick="setOption('word', 100, this)">100</span>
-            <span class="tool-item" onclick="setOption('word', 200, this)">200</span>
-            <span class="tool-item" onclick="setOption('word', 500, this)">500</span>
-            <span class="tool-item" onclick="setOption('word', 1000, this)">1000</span>
-        </div>
-    </div>
-
     <div id="search-box">
-        <input type="text" id="songQuery" placeholder="Nhập tên bài hát HOẶC dán Link..." autocomplete="off">
-        <div id="loading">Đang xử lý... <i class="fas fa-spinner fa-spin"></i></div>
+        <input type="text" id="songQuery" placeholder="Nhập tên bài hát (hoặc Link)..." autocomplete="off">
+        <div id="statusMsg"></div>
         <div id="search-results"></div>
     </div>
 
     <div id="game-area">
-        <div id="info-bar">60</div>
-        <div id="contentTitle"></div>
+        <div id="info-bar">0 từ</div>
+        
+        <div id="contentTitle">Song Title</div>
+        
         <div id="paragraph-display"></div>
+        
         <div id="input-container" onclick="hiddenInput.focus()">
             <span id="typing-display"></span>
         </div>
         <input type="text" id="hiddenInput" autocomplete="off">
         
         <div id="keyboard">
-            <div class="kb-row"><div class="key" data-c="Backquote">`</div><div class="key" data-c="Digit1">1</div><div class="key" data-c="Digit2">2</div><div class="key" data-c="Digit3">3</div><div class="key" data-c="Digit4">4</div><div class="key" data-c="Digit5">5</div><div class="key" data-c="Digit6">6</div><div class="key" data-c="Digit7">7</div><div class="key" data-c="Digit8">8</div><div class="key" data-c="Digit9">9</div><div class="key" data-c="Digit0">0</div><div class="key" data-c="Minus">-</div><div class="key" data-c="Equal">=</div><div class="key" style="width:70px">Back</div></div>
-            <div class="kb-row"><div class="key" style="width:65px">Tab</div><div class="key" data-c="KeyQ">Q</div><div class="key" data-c="KeyW">W</div><div class="key" data-c="KeyE">E</div><div class="key" data-c="KeyR">R</div><div class="key" data-c="KeyT">T</div><div class="key" data-c="KeyY">Y</div><div class="key" data-c="KeyU">U</div><div class="key" data-c="KeyI">I</div><div class="key" data-c="KeyO">O</div><div class="key" data-c="KeyP">P</div><div class="key" data-c="BracketLeft">[</div><div class="key" data-c="BracketRight">]</div><div class="key" data-c="Backslash">\</div></div>
-            <div class="kb-row"><div class="key" style="width:75px">Caps</div><div class="key" data-c="KeyA">A</div><div class="key" data-c="KeyS">S</div><div class="key" data-c="KeyD">D</div><div class="key" data-c="KeyF">F</div><div class="key" data-c="KeyG">G</div><div class="key" data-c="KeyH">H</div><div class="key" data-c="KeyJ">J</div><div class="key" data-c="KeyK">K</div><div class="key" data-c="KeyL">L</div><div class="key" data-c="Semicolon">;</div><div class="key" data-c="Quote">'</div><div class="key" style="width:90px">Enter</div></div>
-            <div class="kb-row"><div class="key" style="width:90px">Shift</div><div class="key" data-c="KeyZ">Z</div><div class="key" data-c="KeyX">X</div><div class="key" data-c="KeyC">C</div><div class="key" data-c="KeyV">V</div><div class="key" data-c="KeyB">B</div><div class="key" data-c="KeyN">N</div><div class="key" data-c="KeyM">M</div><div class="key" data-c="Comma">,</div><div class="key" data-c="Period">.</div><div class="key" data-c="Slash">/</div><div class="key" style="width:90px">Shift</div></div>
+            <div class="kb-row"><div class="key" data-c="Backquote">`</div><div class="key" data-c="Digit1">1</div><div class="key" data-c="Digit2">2</div><div class="key" data-c="Digit3">3</div><div class="key" data-c="Digit4">4</div><div class="key" data-c="Digit5">5</div><div class="key" data-c="Digit6">6</div><div class="key" data-c="Digit7">7</div><div class="key" data-c="Digit8">8</div><div class="key" data-c="Digit9">9</div><div class="key" data-c="Digit0">0</div><div class="key" data-c="Minus">-</div><div class="key" data-c="Equal">=</div><div class="key back">Back</div></div>
+            <div class="kb-row"><div class="key tab">Tab</div><div class="key" data-c="KeyQ">Q</div><div class="key" data-c="KeyW">W</div><div class="key" data-c="KeyE">E</div><div class="key" data-c="KeyR">R</div><div class="key" data-c="KeyT">T</div><div class="key" data-c="KeyY">Y</div><div class="key" data-c="KeyU">U</div><div class="key" data-c="KeyI">I</div><div class="key" data-c="KeyO">O</div><div class="key" data-c="KeyP">P</div><div class="key" data-c="BracketLeft">[</div><div class="key" data-c="BracketRight">]</div><div class="key" data-c="Backslash">\</div></div>
+            <div class="kb-row"><div class="key caps">Caps</div><div class="key" data-c="KeyA">A</div><div class="key" data-c="KeyS">S</div><div class="key" data-c="KeyD">D</div><div class="key" data-c="KeyF">F</div><div class="key" data-c="KeyG">G</div><div class="key" data-c="KeyH">H</div><div class="key" data-c="KeyJ">J</div><div class="key" data-c="KeyK">K</div><div class="key" data-c="KeyL">L</div><div class="key" data-c="Semicolon">;</div><div class="key" data-c="Quote">'</div><div class="key enter">Enter</div></div>
+            <div class="kb-row"><div class="key shift">Shift</div><div class="key" data-c="KeyZ">Z</div><div class="key" data-c="KeyX">X</div><div class="key" data-c="KeyC">C</div><div class="key" data-c="KeyV">V</div><div class="key" data-c="KeyB">B</div><div class="key" data-c="KeyN">N</div><div class="key" data-c="KeyM">M</div><div class="key" data-c="Comma">,</div><div class="key" data-c="Period">.</div><div class="key" data-c="Slash">/</div><div class="key shift">Shift</div></div>
             <div class="kb-row"><div class="key space" data-c="Space">Space</div></div>
         </div>
     </div>
@@ -118,68 +125,37 @@
             <div><div style="color:var(--sub); font-size:18px;">Chính xác</div><div class="stat-val" id="res-acc" style="color:#fff">0%</div></div>
         </div>
         <div class="chart-box"><canvas id="wpmChart"></canvas></div>
-        <button class="btn-restart" onclick="location.reload()">Chơi Lại (Tab)</button>
+        <button class="btn-restart" onclick="location.reload()">Bài Khác (Tab)</button>
     </div>
 
 <script>
-    let allWords = [], currentWordIdx = 0, gameMode = 'lyrics';
-    let targetValue = 60, timerInterval = null, timeLeft = 0;
+    let allWords = [], currentWordIdx = 0;
     let isPlaying = false, startTime = 0, totalCorrect = 0, totalWrong = 0;
     let wpmHistory = [], labels = [], chartInterval = null;
 
     const hiddenInput = document.getElementById('hiddenInput');
     const typingDisplay = document.getElementById('typing-display');
     const paragraphDiv = document.getElementById('paragraph-display');
-    const loading = document.getElementById('loading');
+    const statusMsg = document.getElementById('statusMsg');
 
-    function setMode(mode, el) {
-        gameMode = mode;
-        document.querySelectorAll('.tool-group:first-child .tool-item').forEach(e => e.classList.remove('active'));
-        el.classList.add('active');
-        
-        if(mode === 'quote') {
-            document.getElementById('time-options').style.display = 'none';
-            document.getElementById('word-options').style.display = 'flex';
-            document.getElementById('search-box').style.display = 'none';
-            // Gọi AI tạo văn 30 từ mặc định khi chuyển sang chế độ này
-            setOption('word', 30, document.querySelector('#word-options .tool-item:first-child'));
-        } else {
-            document.getElementById('time-options').style.display = 'flex';
-            document.getElementById('word-options').style.display = 'none';
-            document.getElementById('search-box').style.display = 'block';
-            document.getElementById('game-area').style.display = 'none';
-            setOption('time', 60, document.querySelector('#time-options .tool-item:nth-child(4)'));
-        }
-    }
-
-    function setOption(type, value, el) {
-        targetValue = value;
-        const parent = el.parentElement;
-        parent.querySelectorAll('.tool-item').forEach(e => e.classList.remove('active'));
-        el.classList.add('active');
-        
-        if(gameMode === 'quote') {
-            fetchQuote(value); // Gọi AI viết văn
-        } else {
-            document.getElementById('info-bar').innerText = value + "s";
-        }
-    }
-
+    // --- SEARCH ---
     document.getElementById('songQuery').addEventListener('keypress', async (e) => {
         if(e.key === 'Enter') {
             const query = e.target.value.trim();
             if(!query) return;
-            loading.innerText = "Đang xử lý..."; loading.style.display = 'block';
+            
             document.getElementById('search-results').style.display = 'none';
+            statusMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 
             if(query.startsWith('http')) {
                 fetchLyrics(query);
             } else {
                 const res = await fetch('/search-list', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query}) });
                 const list = await res.json();
-                loading.style.display = 'none';
-                if(list.error) return alert(list.error);
                 
+                if(list.error) { statusMsg.innerText = list.error; return; }
+                
+                statusMsg.innerText = "Chọn 1 bài hát:";
                 const resBox = document.getElementById('search-results');
                 resBox.innerHTML = ''; resBox.style.display = 'block';
                 list.forEach(item => {
@@ -195,40 +171,29 @@
 
     async function fetchLyrics(title) {
         document.getElementById('search-results').style.display = 'none';
-        loading.innerText = "Đang tải lời..."; loading.style.display = 'block';
+        statusMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải lời bài hát...';
+        
         const res = await fetch('/get-lyrics', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title}) });
         const data = await res.json();
-        loading.style.display = 'none';
-        if(data.error) alert(data.error);
+        
+        if(data.error) statusMsg.innerText = data.error;
         else startGame(data.title, data.lrc);
     }
 
-    async function fetchQuote(length) {
-        loading.innerText = "Gemini đang viết " + length + " từ...";
-        loading.style.display = 'block';
-        document.getElementById('game-area').style.display = 'none';
-        
-        const res = await fetch('/get-quote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({length}) });
-        const data = await res.json();
-        loading.style.display = 'none';
-        startGame(data.author, data.content);
-    }
-
+    // --- GAME START ---
     function startGame(title, text) {
         document.getElementById('search-box').style.display = 'none';
-        document.getElementById('toolbar').style.display = 'flex';
         document.getElementById('game-area').style.display = 'flex';
-        document.getElementById('contentTitle').innerText = title;
         
-        if(gameMode === 'lyrics') {
-            document.getElementById('info-bar').innerText = targetValue + "s";
-            timeLeft = targetValue;
-        } else {
-            document.getElementById('info-bar').innerText = targetValue + " từ";
-        }
+        // Hiện tiêu đề lúc đầu
+        const titleEl = document.getElementById('contentTitle');
+        titleEl.innerText = title;
+        titleEl.style.display = 'block'; 
         
         const cleanText = text.replace(/\[.*?\]/g, ' ');
         allWords = cleanText.split(/\s+/).filter(w => w.length > 0);
+        
+        document.getElementById('info-bar').innerText = "Tổng: " + allWords.length + " từ";
         
         paragraphDiv.innerHTML = '';
         allWords.forEach((w, i) => {
@@ -243,10 +208,18 @@
         hiddenInput.focus();
     }
 
+    // --- TYPING CORE ---
     document.addEventListener('click', () => { if(document.getElementById('game-area').style.display==='flex') hiddenInput.focus(); });
 
     hiddenInput.addEventListener('input', () => {
-        if(!isPlaying) { isPlaying = true; startTime = Date.now(); startChart(); if(gameMode==='lyrics') startTimer(); }
+        if(!isPlaying) { 
+            isPlaying = true; 
+            startTime = Date.now(); 
+            startChart(); 
+            // ẨN TIÊU ĐỀ KHI BẮT ĐẦU GÕ
+            document.getElementById('contentTitle').style.display = 'none';
+        }
+
         let val = hiddenInput.value;
         if(val.includes(' ')) {
             const spaceIdx = val.indexOf(' ');
@@ -266,7 +239,7 @@
                     const next = document.getElementById(`w-${currentWordIdx}`);
                     next.classList.add('active');
                     if(next.offsetTop > paragraphDiv.scrollTop + 60) paragraphDiv.scrollTop = next.offsetTop - 30;
-                    if(gameMode === 'quote') document.getElementById('info-bar').innerText = (allWords.length - currentWordIdx) + " từ";
+                    document.getElementById('info-bar').innerText = "Còn lại: " + (allWords.length - currentWordIdx) + " từ";
                 }
             }
             hiddenInput.value = remaining; typingDisplay.innerText = remaining; checkColor(remaining);
@@ -280,13 +253,16 @@
         typingDisplay.style.color = allWords[currentWordIdx].toLowerCase().startsWith(val.toLowerCase()) ? '#e2b714' : '#ca4754';
     }
 
-    function startTimer() {
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById('info-bar').innerText = timeLeft + "s";
-            if(timeLeft <= 0) finishGame();
-        }, 1000);
-    }
+    // --- KEYBOARD & CHART ---
+    document.addEventListener('keydown', (e) => {
+        const k = document.querySelector(`.key[data-c="${e.code}"]`);
+        if(k) k.classList.add('pressed');
+        if(e.key === 'Tab') { e.preventDefault(); location.reload(); }
+    });
+    document.addEventListener('keyup', (e) => {
+        const k = document.querySelector(`.key[data-c="${e.code}"]`);
+        if(k) k.classList.remove('pressed');
+    });
 
     function startChart() {
         chartInterval = setInterval(() => {
@@ -299,7 +275,7 @@
     }
 
     function finishGame() {
-        clearInterval(chartInterval); clearInterval(timerInterval);
+        clearInterval(chartInterval);
         const m = (Date.now() - startTime)/60000;
         const wpm = Math.round((totalCorrect/5)/m);
         const acc = Math.round((totalCorrect/(totalCorrect+totalWrong))*100);
@@ -312,16 +288,6 @@
             options:{plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#444'}}, y:{grid:{color:'#444'}}}}
         });
     }
-    
-    document.addEventListener('keydown', (e) => {
-        const k = document.querySelector(`.key[data-c="${e.code}"]`);
-        if(k) k.classList.add('pressed');
-        if(e.key === 'Tab') { e.preventDefault(); location.reload(); }
-    });
-    document.addEventListener('keyup', (e) => {
-        const k = document.querySelector(`.key[data-c="${e.code}"]`);
-        if(k) k.classList.remove('pressed');
-    });
 </script>
 </body>
 </html>
