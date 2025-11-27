@@ -11,72 +11,55 @@
         :root { --bg: #323437; --main: #e2b714; --sub: #646669; --text: #d1d0c5; --err: #ca4754; --box: #2c2e31; }
         body { background: var(--bg); color: var(--text); font-family: 'Roboto Mono', monospace; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; }
 
-        /* --- LOGO --- */
-        .logo { font-size: 24px; color: var(--sub); margin-bottom: 30px; }
+        .logo { font-size: 20px; color: var(--sub); margin-bottom: 25px; }
         .logo span { color: var(--main); }
 
-        /* --- TOOLBAR (Chọn chế độ & Thời gian) --- */
-        .toolbar { display: flex; gap: 20px; margin-bottom: 30px; background: #252525; padding: 10px 30px; border-radius: 8px; font-size: 14px; }
-        .tool-group { display: flex; gap: 10px; align-items: center; border-right: 1px solid #444; padding-right: 20px; }
-        .tool-group:last-child { border: none; }
+        /* TOOLBAR */
+        .toolbar { display: flex; gap: 15px; margin-bottom: 25px; background: #252525; padding: 10px 25px; border-radius: 8px; font-size: 14px; }
+        .tool-group { display: flex; gap: 15px; align-items: center; border-right: 1px solid #444; padding-right: 20px; }
+        .tool-group:last-child { border: none; padding-right: 0; }
         .tool-item { cursor: pointer; color: var(--sub); transition: 0.2s; }
         .tool-item:hover, .tool-item.active { color: var(--main); font-weight: bold; }
+        .tool-label { color: #555; font-size: 12px; margin-right: 5px; }
 
-        /* --- SEARCH BOX --- */
+        /* SEARCH */
         #search-box { position: relative; width: 600px; text-align: center; }
-        #search-box input { 
-            background: transparent; border: none; border-bottom: 2px solid var(--sub); 
-            color: var(--text); font-size: 28px; padding: 10px; width: 100%; text-align: center; outline: none; 
-        }
-        
-        /* SEARCH RESULTS POPUP */
-        #search-results { 
-            display: none; position: absolute; top: 100%; left: 0; width: 100%; 
-            background: #222; border: 1px solid var(--main); border-radius: 8px; 
-            max-height: 300px; overflow-y: auto; z-index: 50; margin-top: 10px;
-        }
-        .search-item { padding: 15px; border-bottom: 1px solid #444; cursor: pointer; display: flex; justify-content: space-between; text-align: left; color: var(--sub);}
+        #search-box input { background: transparent; border: none; border-bottom: 2px solid var(--sub); color: var(--text); font-size: 24px; padding: 10px; width: 100%; text-align: center; outline: none; }
+        #search-results { display: none; position: absolute; top: 100%; width: 100%; background: #222; border: 1px solid var(--main); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 50; margin-top: 5px; }
+        .search-item { padding: 12px; border-bottom: 1px solid #444; cursor: pointer; display: flex; justify-content: space-between; text-align: left; font-size: 15px; color: var(--text); }
         .search-item:hover { background: #333; color: var(--main); }
 
-        /* --- GAME UI --- */
+        /* GAME UI */
         #game-area { display: none; width: 90%; max-width: 900px; flex-direction: column; align-items: center; }
-        #timer-display { font-size: 60px; color: var(--main); margin-bottom: 10px; font-weight: bold; }
-        #contentTitle { color: var(--sub); margin-bottom: 20px; font-size: 18px; }
+        #info-bar { font-size: 24px; color: var(--main); margin-bottom: 15px; font-weight: bold; }
+        #contentTitle { color: var(--sub); margin-bottom: 20px; font-size: 16px; }
         
-        /* Đoạn văn */
-        #paragraph-display { 
-            width: 100%; height: 140px; background: #292929; border-radius: 8px; padding: 25px; 
-            font-size: 24px; color: var(--sub); overflow: hidden; position: relative; text-align: left; line-height: 1.6; margin-bottom: 30px; 
-        }
-        #paragraph-display::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: linear-gradient(transparent, #292929); }
-        
-        .word { display: inline-block; margin-right: 12px; padding: 2px 5px; opacity: 0.5; }
-        .word.active { opacity: 1; color: #fff; background: #444; transform: scale(1.1); font-weight: bold; border-radius: 4px; }
+        #paragraph-display { width: 100%; height: 130px; background: #292929; border-radius: 8px; padding: 20px; font-size: 22px; color: var(--sub); overflow: hidden; position: relative; text-align: left; line-height: 1.6; margin-bottom: 30px; }
+        #paragraph-display::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: linear-gradient(transparent, #292929); }
+        .word { display: inline-block; margin-right: 10px; padding: 2px 5px; opacity: 0.5; }
+        .word.active { opacity: 1; color: #fff; background: #444; transform: scale(1.05); border-radius: 4px; }
         .word.done-correct { color: var(--main); opacity: 1; }
         .word.done-wrong { color: var(--err); text-decoration: line-through; opacity: 1; }
 
-        /* Input Riêng */
-        #input-container { 
-            width: 400px; height: 70px; background: var(--box); border: 2px solid var(--main); 
-            border-radius: 10px; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 0 25px rgba(226,183,20,0.1); margin-bottom: 30px; 
-        }
-        #typing-display { font-size: 36px; font-weight: bold; color: var(--text); white-space: pre; }
+        #input-container { width: 400px; height: 60px; background: var(--box); border: 2px solid var(--main); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        #typing-display { font-size: 30px; font-weight: bold; color: var(--text); white-space: pre; }
         #hiddenInput { opacity: 0; position: absolute; }
 
-        /* Keyboard */
-        #keyboard { transform: scale(0.9); display: flex; flex-direction: column; gap: 6px; align-items: center; }
-        .kb-row { display: flex; gap: 6px; }
-        .key { width: 50px; height: 50px; border: 1px solid var(--sub); border-radius: 6px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; }
+        /* KEYBOARD */
+        #keyboard { transform: scale(0.85); display: flex; flex-direction: column; gap: 5px; align-items: center; }
+        .kb-row { display: flex; gap: 5px; }
+        .key { width: 48px; height: 48px; border: 1px solid var(--sub); border-radius: 5px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; font-size: 14px; }
         .key.pressed { background: var(--main); color: #222; border-color: var(--main); transform: translateY(3px); }
         .key.space { width: 300px; }
 
-        /* RESULT SCREEN */
+        /* RESULT */
         #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
-        .chart-box { width: 800px; height: 400px; background:#292929; padding:20px; border-radius:10px; margin-top:30px; }
-        .stat-val { font-size: 70px; color: var(--main); font-weight: bold; line-height: 1;}
-        .btn-restart { margin-top: 30px; padding: 15px 40px; background: var(--sub); border: none; color: #fff; font-size: 20px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .chart-box { width: 750px; height: 350px; background:#292929; padding:20px; border-radius:10px; margin-top:20px; }
+        .stat-val { font-size: 60px; color: var(--main); font-weight: bold; line-height: 1;}
+        .btn-restart { margin-top: 30px; padding: 12px 40px; background: var(--sub); border: none; color: #fff; font-size: 18px; cursor: pointer; border-radius: 6px; font-weight: bold; }
         .btn-restart:hover { background: var(--main); color: #000; }
+        
+        #loading { display: none; color: var(--main); margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -85,110 +68,128 @@
 
     <div class="toolbar" id="toolbar">
         <div class="tool-group">
-            <span class="tool-item active" onclick="setMode('lyrics', this)"><i class="fas fa-music"></i> Lyrics</span>
-            <span class="tool-item" onclick="setMode('quote', this)"><i class="fas fa-quote-right"></i> Quote</span>
+            <span class="tool-item active" onclick="setMode('lyrics', this)"><i class="fas fa-music"></i> Lời Nhạc</span>
+            <span class="tool-item" onclick="setMode('quote', this)"><i class="fas fa-book"></i> Văn Mẫu</span>
         </div>
-        <div class="tool-group">
-            <span class="tool-item" onclick="setTime(15, this)">15</span>
-            <span class="tool-item" onclick="setTime(30, this)">30</span>
-            <span class="tool-item active" onclick="setTime(60, this)">60</span>
-            <span class="tool-item" onclick="setTime(120, this)">120</span>
+        
+        <div class="tool-group" id="time-options">
+            <span class="tool-label">Thời gian:</span>
+            <span class="tool-item" onclick="setOption('time', 15, this)">15</span>
+            <span class="tool-item" onclick="setOption('time', 30, this)">30</span>
+            <span class="tool-item active" onclick="setOption('time', 60, this)">60</span>
+            <span class="tool-item" onclick="setOption('time', 120, this)">120</span>
+        </div>
+
+        <div class="tool-group" id="word-options" style="display:none;">
+            <span class="tool-label">Số từ:</span>
+            <span class="tool-item active" onclick="setOption('word', 30, this)">30</span>
+            <span class="tool-item" onclick="setOption('word', 50, this)">50</span>
+            <span class="tool-item" onclick="setOption('word', 100, this)">100</span>
+            <span class="tool-item" onclick="setOption('word', 200, this)">200</span>
+            <span class="tool-item" onclick="setOption('word', 500, this)">500</span>
+            <span class="tool-item" onclick="setOption('word', 1000, this)">1000</span>
         </div>
     </div>
 
     <div id="search-box">
-        <input type="text" id="songQuery" placeholder="Nhập tên bài hát (VD: Em Cưới Rồi)..." autocomplete="off">
-        <p id="statusMsg" style="color:var(--main); margin-top:15px; font-size: 14px;"></p>
+        <input type="text" id="songQuery" placeholder="Nhập tên bài hát..." autocomplete="off">
+        <div id="loading">Đang tải dữ liệu... <i class="fas fa-spinner fa-spin"></i></div>
         <div id="search-results"></div>
     </div>
 
     <div id="game-area">
-        <div id="timer-display">60</div>
-        <div id="contentTitle">Song Title</div>
-        
+        <div id="info-bar">60</div>
+        <div id="contentTitle"></div>
         <div id="paragraph-display"></div>
-        
         <div id="input-container" onclick="hiddenInput.focus()">
             <span id="typing-display"></span>
         </div>
-        
         <input type="text" id="hiddenInput" autocomplete="off">
         
         <div id="keyboard">
             <div class="kb-row"><div class="key" data-c="Backquote">`</div><div class="key" data-c="Digit1">1</div><div class="key" data-c="Digit2">2</div><div class="key" data-c="Digit3">3</div><div class="key" data-c="Digit4">4</div><div class="key" data-c="Digit5">5</div><div class="key" data-c="Digit6">6</div><div class="key" data-c="Digit7">7</div><div class="key" data-c="Digit8">8</div><div class="key" data-c="Digit9">9</div><div class="key" data-c="Digit0">0</div><div class="key" data-c="Minus">-</div><div class="key" data-c="Equal">=</div><div class="key" style="width:70px">Back</div></div>
-            <div class="kb-row"><div class="key" style="width:70px">Tab</div><div class="key" data-c="KeyQ">Q</div><div class="key" data-c="KeyW">W</div><div class="key" data-c="KeyE">E</div><div class="key" data-c="KeyR">R</div><div class="key" data-c="KeyT">T</div><div class="key" data-c="KeyY">Y</div><div class="key" data-c="KeyU">U</div><div class="key" data-c="KeyI">I</div><div class="key" data-c="KeyO">O</div><div class="key" data-c="KeyP">P</div><div class="key" data-c="BracketLeft">[</div><div class="key" data-c="BracketRight">]</div><div class="key" data-c="Backslash">\</div></div>
-            <div class="kb-row"><div class="key" style="width:80px">Caps</div><div class="key" data-c="KeyA">A</div><div class="key" data-c="KeyS">S</div><div class="key" data-c="KeyD">D</div><div class="key" data-c="KeyF">F</div><div class="key" data-c="KeyG">G</div><div class="key" data-c="KeyH">H</div><div class="key" data-c="KeyJ">J</div><div class="key" data-c="KeyK">K</div><div class="key" data-c="KeyL">L</div><div class="key" data-c="Semicolon">;</div><div class="key" data-c="Quote">'</div><div class="key" style="width:100px">Enter</div></div>
-            <div class="kb-row"><div class="key" style="width:100px">Shift</div><div class="key" data-c="KeyZ">Z</div><div class="key" data-c="KeyX">X</div><div class="key" data-c="KeyC">C</div><div class="key" data-c="KeyV">V</div><div class="key" data-c="KeyB">B</div><div class="key" data-c="KeyN">N</div><div class="key" data-c="KeyM">M</div><div class="key" data-c="Comma">,</div><div class="key" data-c="Period">.</div><div class="key" data-c="Slash">/</div><div class="key" style="width:100px">Shift</div></div>
+            <div class="kb-row"><div class="key" style="width:65px">Tab</div><div class="key" data-c="KeyQ">Q</div><div class="key" data-c="KeyW">W</div><div class="key" data-c="KeyE">E</div><div class="key" data-c="KeyR">R</div><div class="key" data-c="KeyT">T</div><div class="key" data-c="KeyY">Y</div><div class="key" data-c="KeyU">U</div><div class="key" data-c="KeyI">I</div><div class="key" data-c="KeyO">O</div><div class="key" data-c="KeyP">P</div><div class="key" data-c="BracketLeft">[</div><div class="key" data-c="BracketRight">]</div><div class="key" data-c="Backslash">\</div></div>
+            <div class="kb-row"><div class="key" style="width:75px">Caps</div><div class="key" data-c="KeyA">A</div><div class="key" data-c="KeyS">S</div><div class="key" data-c="KeyD">D</div><div class="key" data-c="KeyF">F</div><div class="key" data-c="KeyG">G</div><div class="key" data-c="KeyH">H</div><div class="key" data-c="KeyJ">J</div><div class="key" data-c="KeyK">K</div><div class="key" data-c="KeyL">L</div><div class="key" data-c="Semicolon">;</div><div class="key" data-c="Quote">'</div><div class="key" style="width:90px">Enter</div></div>
+            <div class="kb-row"><div class="key" style="width:90px">Shift</div><div class="key" data-c="KeyZ">Z</div><div class="key" data-c="KeyX">X</div><div class="key" data-c="KeyC">C</div><div class="key" data-c="KeyV">V</div><div class="key" data-c="KeyB">B</div><div class="key" data-c="KeyN">N</div><div class="key" data-c="KeyM">M</div><div class="key" data-c="Comma">,</div><div class="key" data-c="Period">.</div><div class="key" data-c="Slash">/</div><div class="key" style="width:90px">Shift</div></div>
             <div class="kb-row"><div class="key space" data-c="Space">Space</div></div>
         </div>
     </div>
 
     <div id="result-screen">
-        <div style="display:flex; gap:80px; text-align:center;">
-            <div><div style="color:var(--sub); font-size:24px;">wpm</div><div class="stat-val" id="res-wpm">0</div></div>
-            <div><div style="color:var(--sub); font-size:24px;">acc</div><div class="stat-val" id="res-acc" style="color:#fff">0%</div></div>
+        <div style="display:flex; gap:60px; text-align:center;">
+            <div><div style="color:var(--sub); font-size:18px;">Tốc độ (WPM)</div><div class="stat-val" id="res-wpm">0</div></div>
+            <div><div style="color:var(--sub); font-size:18px;">Chính xác</div><div class="stat-val" id="res-acc" style="color:#fff">0%</div></div>
         </div>
         <div class="chart-box"><canvas id="wpmChart"></canvas></div>
-        <button class="btn-restart" onclick="location.reload()">New Test (Tab)</button>
+        <button class="btn-restart" onclick="location.reload()">Chơi Lại (Tab)</button>
     </div>
 
 <script>
-    // --- VARIABLES ---
-    let allWords = [];
-    let currentWordIdx = 0;
-    let gameMode = 'lyrics';
-    let timeLimit = 60;
-    let timerInterval = null;
-    let timeLeft = 60;
-    
-    let isPlaying = false;
-    let startTime = 0;
-    let totalCorrectChars = 0;
-    let totalWrongChars = 0;
+    let allWords = [], currentWordIdx = 0, gameMode = 'lyrics';
+    let targetValue = 60; // Thời gian (s) hoặc Số từ (words)
+    let timerInterval = null, timeLeft = 0;
+    let isPlaying = false, startTime = 0, totalCorrect = 0, totalWrong = 0;
     let wpmHistory = [], labels = [], chartInterval = null;
 
     const hiddenInput = document.getElementById('hiddenInput');
     const typingDisplay = document.getElementById('typing-display');
     const paragraphDiv = document.getElementById('paragraph-display');
+    const loading = document.getElementById('loading');
 
-    // --- SETUP MODE & TIMER ---
+    // SETUP
     function setMode(mode, el) {
         gameMode = mode;
         document.querySelectorAll('.tool-group:first-child .tool-item').forEach(e => e.classList.remove('active'));
         el.classList.add('active');
         
+        // Đổi thanh chọn options
         if(mode === 'quote') {
+            document.getElementById('time-options').style.display = 'none';
+            document.getElementById('word-options').style.display = 'flex';
             document.getElementById('search-box').style.display = 'none';
-            document.getElementById('statusMsg').innerText = "Đang lấy câu nói hay...";
-            fetchQuote();
+            targetValue = 30; // Mặc định 30 từ
+            fetchQuote(targetValue);
         } else {
+            document.getElementById('time-options').style.display = 'flex';
+            document.getElementById('word-options').style.display = 'none';
             document.getElementById('search-box').style.display = 'block';
             document.getElementById('game-area').style.display = 'none';
-            document.getElementById('statusMsg').innerText = "";
+            targetValue = 60; // Mặc định 60s
+        }
+        
+        // Reset active class trong options mới
+        const group = mode === 'quote' ? 'word-options' : 'time-options';
+        const items = document.querySelectorAll(`#${group} .tool-item`);
+        items.forEach(i => i.classList.remove('active'));
+        items[0].classList.add('active'); // Active cái đầu tiên
+    }
+
+    function setOption(type, value, el) {
+        targetValue = value;
+        const parent = el.parentElement;
+        parent.querySelectorAll('.tool-item').forEach(e => e.classList.remove('active'));
+        el.classList.add('active');
+        
+        if(gameMode === 'quote') {
+            fetchQuote(value);
+        } else {
+            document.getElementById('info-bar').innerText = value;
         }
     }
 
-    function setTime(time, el) {
-        timeLimit = time;
-        timeLeft = time;
-        document.getElementById('timer-display').innerText = time;
-        document.querySelectorAll('.tool-group:last-child .tool-item').forEach(e => e.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    // --- API CALLS ---
+    // SEARCH
     document.getElementById('songQuery').addEventListener('keypress', async (e) => {
         if(e.key === 'Enter') {
             const query = e.target.value;
-            const status = document.getElementById('statusMsg');
-            status.innerText = "Đang tìm trên Youtube...";
+            loading.style.display = 'block';
+            document.getElementById('search-results').style.display = 'none';
             
             const res = await fetch('/search-list', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query}) });
             const list = await res.json();
+            loading.style.display = 'none';
             
-            if(list.error) { status.innerText = list.error; return; }
+            if(list.error) return alert(list.error);
             
-            // Show list results
             const resBox = document.getElementById('search-results');
             resBox.innerHTML = ''; resBox.style.display = 'block';
             list.forEach(item => {
@@ -198,32 +199,41 @@
                 div.onclick = () => fetchLyrics(item.title);
                 resBox.appendChild(div);
             });
-            status.innerText = "Chọn 1 bài bên dưới:";
         }
     });
 
     async function fetchLyrics(title) {
         document.getElementById('search-results').style.display = 'none';
-        document.getElementById('statusMsg').innerText = "Đang tải lời bài hát...";
+        loading.style.display = 'block';
         const res = await fetch('/get-lyrics', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title}) });
         const data = await res.json();
-        if(data.error) document.getElementById('statusMsg').innerText = data.error;
+        loading.style.display = 'none';
+        if(data.error) alert(data.error);
         else startGame(data.title, data.lrc);
     }
 
-    async function fetchQuote() {
-        const res = await fetch('/get-quote');
+    async function fetchQuote(length) {
+        loading.style.display = 'block';
+        const res = await fetch('/get-quote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({length}) });
         const data = await res.json();
-        startGame("Quote by " + data.author, data.content);
+        loading.style.display = 'none';
+        startGame(data.author, data.content);
     }
 
-    // --- GAME ENGINE ---
+    // GAME
     function startGame(title, text) {
         document.getElementById('search-box').style.display = 'none';
         document.getElementById('toolbar').style.display = 'none';
         document.getElementById('game-area').style.display = 'flex';
         document.getElementById('contentTitle').innerText = title;
-        document.getElementById('timer-display').innerText = timeLimit;
+        
+        // Hiển thị thông số ban đầu (Thời gian hoặc Số từ còn lại)
+        if(gameMode === 'lyrics') {
+            document.getElementById('info-bar').innerText = targetValue;
+            timeLeft = targetValue;
+        } else {
+            document.getElementById('info-bar').innerText = targetValue + " từ";
+        }
         
         const cleanText = text.replace(/\[.*?\]/g, ' ');
         allWords = cleanText.split(/\s+/).filter(w => w.length > 0);
@@ -236,7 +246,7 @@
             paragraphDiv.appendChild(s);
         });
         
-        currentWordIdx = 0; totalCorrectChars = 0; totalWrongChars = 0;
+        currentWordIdx = 0; totalCorrect = 0; totalWrong = 0; isPlaying = false;
         hiddenInput.value = ''; typingDisplay.innerText = '';
         hiddenInput.focus();
     }
@@ -244,29 +254,38 @@
     document.addEventListener('click', () => { if(document.getElementById('game-area').style.display==='flex') hiddenInput.focus(); });
 
     hiddenInput.addEventListener('input', () => {
-        if(!isPlaying) { isPlaying = true; startTime = Date.now(); startChart(); startTimer(); }
+        if(!isPlaying) { 
+            isPlaying = true; startTime = Date.now(); 
+            startChart(); 
+            if(gameMode === 'lyrics') startTimer(); 
+        }
 
         let val = hiddenInput.value;
         if(val.includes(' ')) {
             const spaceIdx = val.indexOf(' ');
             const wordToSubmit = val.substring(0, spaceIdx);
             const remaining = val.substring(spaceIdx + 1);
-            
             if(wordToSubmit.length >= 0) {
                 const target = allWords[currentWordIdx];
                 const el = document.getElementById(`w-${currentWordIdx}`);
                 if(wordToSubmit.toLowerCase() === target.toLowerCase()) {
-                    el.className = 'word done-correct'; totalCorrectChars += target.length + 1;
+                    el.className = 'word done-correct'; totalCorrect += target.length + 1;
                 } else {
-                    el.className = 'word done-wrong'; totalWrongChars += target.length;
+                    el.className = 'word done-wrong'; totalWrong += target.length;
                 }
-                
                 currentWordIdx++;
+                
+                // End Game Check
                 if(currentWordIdx >= allWords.length) finishGame();
                 else {
                     const next = document.getElementById(`w-${currentWordIdx}`);
                     next.classList.add('active');
-                    if(next.offsetTop > paragraphDiv.scrollTop + 80) paragraphDiv.scrollTop = next.offsetTop - 40;
+                    if(next.offsetTop > paragraphDiv.scrollTop + 60) paragraphDiv.scrollTop = next.offsetTop - 30;
+                    
+                    // Update counter for Quote mode
+                    if(gameMode === 'quote') {
+                        document.getElementById('info-bar').innerText = (allWords.length - currentWordIdx) + " từ";
+                    }
                 }
             }
             hiddenInput.value = remaining; typingDisplay.innerText = remaining; checkColor(remaining);
@@ -277,15 +296,13 @@
 
     function checkColor(val) {
         if(currentWordIdx>=allWords.length) return;
-        const target = allWords[currentWordIdx];
-        typingDisplay.style.color = target.toLowerCase().startsWith(val.toLowerCase()) ? '#e2b714' : '#ca4754';
+        typingDisplay.style.color = allWords[currentWordIdx].toLowerCase().startsWith(val.toLowerCase()) ? '#e2b714' : '#ca4754';
     }
 
     function startTimer() {
-        timeLeft = timeLimit;
         timerInterval = setInterval(() => {
             timeLeft--;
-            document.getElementById('timer-display').innerText = timeLeft;
+            document.getElementById('info-bar').innerText = timeLeft;
             if(timeLeft <= 0) finishGame();
         }, 1000);
     }
@@ -294,7 +311,7 @@
         chartInterval = setInterval(() => {
             const m = (Date.now() - startTime)/60000;
             if(m>0) {
-                const wpm = Math.round((totalCorrectChars/5)/m);
+                const wpm = Math.round((totalCorrect/5)/m);
                 wpmHistory.push(wpm); labels.push(Math.round(m*60));
             }
         }, 1000);
@@ -303,17 +320,15 @@
     function finishGame() {
         clearInterval(chartInterval); clearInterval(timerInterval);
         const m = (Date.now() - startTime)/60000;
-        const wpm = Math.round((totalCorrectChars/5)/m);
-        const acc = Math.round((totalCorrectChars/(totalCorrectChars+totalWrongChars))*100);
-        
+        const wpm = Math.round((totalCorrect/5)/m);
+        const acc = Math.round((totalCorrect/(totalCorrect+totalWrong))*100);
         document.getElementById('game-area').style.display = 'none';
         document.getElementById('result-screen').style.display = 'flex';
         document.getElementById('res-wpm').innerText = wpm;
-        document.getElementById('res-acc').innerText = isNaN(acc) ? "0%" : acc+"%";
-        
+        document.getElementById('res-acc').innerText = isNaN(acc)?'0%':acc+'%';
         new Chart(document.getElementById('wpmChart'), {
-            type: 'line', data: { labels: labels, datasets: [{ label: 'WPM', data: wpmHistory, borderColor: '#e2b714', backgroundColor: 'rgba(226,183,20,0.1)', fill: true, tension: 0.4 }] },
-            options: { plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#444'}}, y:{grid:{color:'#444'}}} }
+            type:'line', data:{labels, datasets:[{label:'WPM', data:wpmHistory, borderColor:'#e2b714', backgroundColor:'rgba(226,183,20,0.1)', fill:true, tension:0.4}]},
+            options:{plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#444'}}, y:{grid:{color:'#444'}}}}
         });
     }
     

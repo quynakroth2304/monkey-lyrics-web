@@ -8,7 +8,7 @@ import requests
 
 app = Flask(__name__)
 
-# --- CẤU HÌNH API GEMINI (Giữ nguyên nếu bạn dùng) ---
+# --- CẤU HÌNH API GEMINI ---
 GEMINI_API_KEY = os.environ.get("AIzaSyCVSjO8txkpPYSC7IiPAjdi9kHzDM-CooA")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -18,62 +18,66 @@ if GEMINI_API_KEY:
 def index():
     return render_template('index.html')
 
-# --- 1. TÌM LIST BÀI HÁT (Hiện 5 bài để chọn) ---
+# --- 1. TÌM LIST BÀI HÁT ---
 @app.route('/search-list', methods=['POST'])
 def search_list():
     query = request.json.get('query')
     if not query: return jsonify({'error': 'Nhập tên bài đi!'}), 400
-    
     try:
-        # Tìm 5 kết quả đầu tiên trên Youtube (Siêu nhanh, ko tải video)
         ydl_opts = {'quiet': True, 'extract_flat': True, 'noplaylist': True, 'limit': 5}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"ytsearch5:{query}", download=False)
             entries = info.get('entries', [])
-            
-            results = []
-            for item in entries:
-                results.append({
-                    'title': item['title'],
-                    'id': item['id']
-                })
-            return jsonify(results)
+            return jsonify([{'title': i['title'], 'id': i['id']} for i in entries])
     except Exception as e: return jsonify({'error': str(e)}), 500
 
-# --- 2. LẤY LỜI BÀI HÁT CHÍNH XÁC ---
+# --- 2. LẤY LỜI BÀI HÁT ---
 @app.route('/get-lyrics', methods=['POST'])
 def get_lyrics():
     data = request.json
     title = data.get('title')
-    
     try:
-        # Làm sạch tên bài hát (Bỏ Official MV, 4K...) để tìm lời chuẩn hơn
         clean_title = re.sub(r"[\(\[].*?[\)\]]", "", title).strip()
-        
-        print(f"Finding lyrics for: {clean_title}")
         lrc = syncedlyrics.search(clean_title)
-        
-        # Nếu tìm bằng tên sạch không ra thì tìm bằng tên gốc
         if not lrc: lrc = syncedlyrics.search(title)
-        
-        if not lrc: return jsonify({'error': 'Không tìm thấy lời bài này!'}), 404
-            
+        if not lrc: return jsonify({'error': 'Không tìm thấy lời!'}), 404
         return jsonify({'title': title, 'lrc': lrc})
     except Exception as e: return jsonify({'error': str(e)}), 500
 
-# --- 3. LẤY TRÍCH DẪN NGẪU NHIÊN (QUOTE) ---
-@app.route('/get-quote', methods=['GET'])
+# --- 3. AI TỰ VIẾT VĂN MẪU (NEW UPDATE) ---
+@app.route('/get-quote', methods=['POST'])
 def get_quote():
+    # Lấy độ dài người dùng chọn (30, 50, 100...)
+    length = int(request.json.get('length', 50))
+    
     try:
-        # Lấy quote tiếng Anh ngẫu nhiên
-        r = requests.get("https://api.quotable.io/random?minLength=100")
-        if r.status_code == 200:
-            data = r.json()
-            return jsonify({'content': data['content'], 'author': data['author']})
-        else:
-            return jsonify({'content': "Success is not final, failure is not fatal: it is the courage to continue that counts.", 'author': "Winston Churchill"})
-    except:
-        return jsonify({'content': "The only way to do great work is to love what you do.", 'author': "Steve Jobs"})
+        # Prompt ra lệnh cho Gemini viết văn
+        prompt = f"""
+        Hãy đóng vai một nhà văn Việt Nam. Viết một đoạn văn xuôi ngẫu nhiên, giàu cảm xúc và ý nghĩa.
+        Chủ đề: Cuộc sống, Tuổi trẻ, Tình yêu quê hương, hoặc Hà Nội/Sài Gòn xưa.
+        Độ dài yêu cầu: Khoảng {length} từ (hãy viết gần đúng số lượng này).
+        
+        QUAN TRỌNG: 
+        1. Chỉ trả về nội dung văn bản thuần túy.
+        2. Không có tiêu đề, không có dấu ngoặc kép bao quanh.
+        3. Văn phong phải mượt mà, đúng chính tả tiếng Việt.
+        """
+        
+        response = model.generate_content(prompt)
+        content = response.text.strip()
+        
+        # Xử lý sạch văn bản nếu AI lỡ thêm markdown
+        content = content.replace('*', '').replace('#', '').replace('"', '')
+        
+        return jsonify({'content': content, 'author': 'Gemini Sáng Tác'})
+
+    except Exception as e:
+        print(f"AI Error: {e}")
+        # Fallback nếu AI bị lỗi hoặc hết quota thì dùng tạm câu này
+        return jsonify({
+            'content': "Đời người như một dòng sông, lững lờ trôi qua bao ghềnh thác để rồi hòa mình vào biển lớn mênh mông. Sống là phải biết yêu thương và sẻ chia.", 
+            'author': 'System Fallback'
+        })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
