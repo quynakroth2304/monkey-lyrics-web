@@ -2,4 +2,5 @@ flask
 syncedlyrics
 google-generativeai
 gunicorn
-firebase-admin
+psycopg2-binary
+yt-dlp
