@@ -10,82 +10,65 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-# --- 1. TÌM DANH SÁCH BÀI HÁT (Khi nhập tên) ---
-@app.route('/search-list', methods=['POST'])
-def search_list():
+# --- API XỬ LÝ TỰ ĐỘNG (AUTO PICK) ---
+@app.route('/get-song-auto', methods=['POST'])
+def get_song_auto():
     query = request.json.get('query')
     if not query: return jsonify({'error': 'Nhập tên bài đi!'}), 400
     
     try:
-        # Cấu hình yt-dlp chế độ "Ẩn mình" (Stealth mode)
+        real_title = query
+        
+        # 1. LẤY TÊN CHUẨN (TỪ LINK HOẶC TỪ KHÓA)
+        # Cấu hình yt-dlp lấy thông tin nhanh nhất (không tải video)
         ydl_opts = {
             'quiet': True,
-            'extract_flat': True, # CHỈ LẤY TEXT, KHÔNG CHẠM VÀO VIDEO
+            'extract_flat': True, 
             'noplaylist': True,
-            'limit': 5,
-            'ignoreerrors': True # Bỏ qua lỗi nếu 1 video bị chặn
+            'limit': 1 # CHỈ LẤY ĐÚNG 1 KẾT QUẢ TỐT NHẤT
         }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(f"ytsearch5:{query}", download=False)
-            entries = info.get('entries', [])
-            
-            results = []
-            for item in entries:
-                if item: # Kiểm tra item tồn tại
-                    results.append({'title': item['title'], 'id': item['id']})
-            
-            if not results:
-                return jsonify({'error': 'Không tìm thấy. Hãy thử tên khác!'}), 404
-                
-            return jsonify(results)
-    except Exception as e:
-        print(f"Search Error: {e}")
-        return jsonify({'error': 'Lỗi kết nối YouTube. Hãy thử lại!'}), 500
-
-# --- 2. LẤY LỜI BÀI HÁT (Xử lý thông minh) ---
-@app.route('/get-lyrics', methods=['POST'])
-def get_lyrics():
-    data = request.json
-    title_or_link = data.get('title')
-    
-    clean_title = title_or_link
-
-    # A. NẾU LÀ LINK: Cố gắng lấy tên bài hát
-    if title_or_link.startswith(('http://', 'https://')):
-        try:
-            ydl_opts = {'quiet': True, 'skip_download': True, 'noplaylist': True, 'ignoreerrors': True}
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(title_or_link, download=False)
-                if not info:
-                    return jsonify({'error': 'YouTube chặn link này rồi. Hãy NHẬP TÊN bài hát nhé!'}), 403
-                clean_title = info.get('title', 'Unknown Song')
-        except Exception:
-            return jsonify({'error': 'Lỗi đọc Link. Hãy nhập Tên Bài Hát cho nhanh!'}), 400
-
-    # B. LÀM SẠCH TÊN (Bỏ rác để tìm lời dễ hơn)
-    # Ví dụ: "Son Tung M-TP - Lac Troi (Official MV)" -> "Lac Troi"
-    try:
-        # Bỏ phần trong ngoặc (...) và [...]
-        clean_title = re.sub(r"[\(\[].*?[\)\]]", "", clean_title)
-        # Bỏ phần sau dấu | hoặc - (thường là tên ca sĩ hoặc Official)
-        if '|' in clean_title: clean_title = clean_title.split('|')[0]
         
-        clean_title = clean_title.strip()
-        print(f"Finding lyrics for: {clean_title}")
+        search_query = query
+        if not query.startswith(('http://', 'https://')):
+            search_query = f"ytsearch1:{query}" # Tìm kiếm trên Youtube nếu không phải link
 
-        # C. TÌM LỜI (Syncedlyrics)
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(search_query, download=False)
+            
+            if 'entries' in info:
+                # Nếu là tìm kiếm, lấy video đầu tiên
+                if len(info['entries']) > 0:
+                    real_title = info['entries'][0]['title']
+                else:
+                    return jsonify({'error': 'Không tìm thấy bài nào!'}), 404
+            else:
+                # Nếu là link trực tiếp
+                real_title = info.get('title', query)
+
+        # 2. LÀM SẠCH TÊN ĐỂ TÌM LỜI
+        # Ví dụ: "Son Tung M-TP - Lac Troi (Official MV)" -> "Lac Troi"
+        clean_title = re.sub(r"[\(\[].*?[\)\]]", "", real_title) 
+        clean_title = clean_title.split('|')[0].strip()
+        if '-' in clean_title:
+            parts = clean_title.split('-')
+            if len(parts) >= 2: clean_title = parts[1].strip()
+
+        print(f"Original: {real_title} -> Search Lyrics: {clean_title}")
+
+        # 3. TÌM LỜI
         lrc = syncedlyrics.search(clean_title)
         
-        # Fallback: Nếu tên sạch ko ra, tìm bằng tên gốc
-        if not lrc: lrc = syncedlyrics.search(title_or_link)
-
-        if not lrc:
+        # Fallback: Tìm bằng tên gốc nếu tên sạch ko ra
+        if not lrc: lrc = syncedlyrics.search(real_title)
+        
+        if not lrc: 
             return jsonify({'error': f'Không tìm thấy lời cho bài: {clean_title}'}), 404
-
-        return jsonify({'title': clean_title, 'lrc': lrc})
+            
+        return jsonify({'title': real_title, 'lrc': lrc})
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(e)
+        return jsonify({'error': 'Lỗi xử lý. Thử lại tên khác xem!'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

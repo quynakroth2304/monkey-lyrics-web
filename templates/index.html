@@ -23,18 +23,8 @@
         }
         #search-box input:focus { border-bottom-color: var(--main); }
         
-        #statusMsg { margin-top: 15px; color: var(--main); font-size: 14px; min-height: 20px; }
+        #loading { display: none; margin-top: 20px; color: var(--main); font-size: 16px; }
         
-        /* LIST RESULT */
-        #search-results { 
-            display: none; position: absolute; top: 100%; left: 0; width: 100%; 
-            background: #222; border: 1px solid var(--main); border-radius: 8px; 
-            max-height: 350px; overflow-y: auto; z-index: 50; margin-top: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .search-item { padding: 15px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; text-align: left; color: var(--text); font-size: 16px;}
-        .search-item:hover { background: #333; color: var(--main); }
-
         /* GAME UI */
         #game-area { display: none; width: 90%; max-width: 900px; flex-direction: column; align-items: center; }
         
@@ -62,23 +52,14 @@
         #typing-display { font-size: 36px; font-weight: bold; color: var(--text); white-space: pre; }
         #hiddenInput { opacity: 0; position: absolute; }
 
-        /* KEYBOARD (BÀN PHÍM ẢO - ĐÃ GIỮ LẠI) */
-        #keyboard { transform: scale(0.9); display: flex; flex-direction: column; gap: 6px; align-items: center; margin-top: 20px; }
+        /* KEYBOARD */
+        #keyboard { transform: scale(0.9); display: flex; flex-direction: column; gap: 6px; align-items: center; }
         .kb-row { display: flex; gap: 6px; }
-        .key { 
-            width: 50px; height: 50px; border: 1px solid var(--sub); border-radius: 6px; 
-            color: var(--sub); display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; transition: 0.05s; font-size: 14px; 
-        }
-        /* Hiệu ứng khi ấn phím */
+        .key { width: 50px; height: 50px; border: 1px solid var(--sub); border-radius: 6px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; font-size: 14px; }
         .key.pressed { background: var(--main); color: #222; border-color: var(--main); transform: translateY(3px); box-shadow: 0 0 10px var(--main); }
         
-        .key.space { width: 300px; } 
-        .key.back { width: 70px; }
-        .key.tab { width: 70px; }
-        .key.caps { width: 80px; }
-        .key.enter { width: 90px; }
-        .key.shift { width: 100px; }
+        .key.space { width: 300px; } .key.back { width: 70px; } .key.tab { width: 70px; }
+        .key.caps { width: 80px; } .key.enter { width: 90px; } .key.shift { width: 100px; }
 
         /* RESULT */
         #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
@@ -93,14 +74,12 @@
     <div class="logo">dành riêng cho <span>Nguyễn Thị Phương</span> ❤️</div>
 
     <div id="search-box">
-        <input type="text" id="songQuery" placeholder="Nhập tên bài hát (hoặc Link)..." autocomplete="off">
-        <div id="statusMsg"></div>
-        <div id="search-results"></div>
+        <input type="text" id="songQuery" placeholder="Nhập tên bài hát hoặc dán Link..." autocomplete="off">
+        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Đang tìm & Tải lời...</div>
     </div>
 
     <div id="game-area">
         <div id="info-bar">0 từ</div>
-        
         <div id="contentTitle">Song Title</div>
         
         <div id="paragraph-display"></div>
@@ -136,59 +115,38 @@
     const hiddenInput = document.getElementById('hiddenInput');
     const typingDisplay = document.getElementById('typing-display');
     const paragraphDiv = document.getElementById('paragraph-display');
-    const statusMsg = document.getElementById('statusMsg');
+    const loading = document.getElementById('loading');
 
-    // --- SEARCH ---
+    // --- SEARCH AUTO ---
     document.getElementById('songQuery').addEventListener('keypress', async (e) => {
         if(e.key === 'Enter') {
             const query = e.target.value.trim();
             if(!query) return;
             
-            document.getElementById('search-results').style.display = 'none';
-            statusMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-
-            if(query.startsWith('http')) {
-                fetchLyrics(query);
-            } else {
-                const res = await fetch('/search-list', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query}) });
-                const list = await res.json();
-                
-                if(list.error) { statusMsg.innerText = list.error; return; }
-                
-                statusMsg.innerText = "Chọn 1 bài hát:";
-                const resBox = document.getElementById('search-results');
-                resBox.innerHTML = ''; resBox.style.display = 'block';
-                list.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'search-item';
-                    div.innerHTML = `<span>${item.title}</span>`;
-                    div.onclick = () => fetchLyrics(item.title);
-                    resBox.appendChild(div);
-                });
-            }
+            loading.style.display = 'block';
+            
+            // Gọi API tự động chọn bài
+            const res = await fetch('/get-song-auto', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({query}) 
+            });
+            const data = await res.json();
+            
+            loading.style.display = 'none';
+            if(data.error) alert(data.error);
+            else startGame(data.title, data.lrc);
         }
     });
-
-    async function fetchLyrics(title) {
-        document.getElementById('search-results').style.display = 'none';
-        statusMsg.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải lời bài hát...';
-        
-        const res = await fetch('/get-lyrics', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title}) });
-        const data = await res.json();
-        
-        if(data.error) statusMsg.innerText = data.error;
-        else startGame(data.title, data.lrc);
-    }
 
     // --- GAME START ---
     function startGame(title, text) {
         document.getElementById('search-box').style.display = 'none';
         document.getElementById('game-area').style.display = 'flex';
         
-        // Hiện tiêu đề lúc đầu
         const titleEl = document.getElementById('contentTitle');
         titleEl.innerText = title;
-        titleEl.style.display = 'block'; 
+        titleEl.style.display = 'block';
         
         const cleanText = text.replace(/\[.*?\]/g, ' ');
         allWords = cleanText.split(/\s+/).filter(w => w.length > 0);
@@ -213,10 +171,8 @@
 
     hiddenInput.addEventListener('input', () => {
         if(!isPlaying) { 
-            isPlaying = true; 
-            startTime = Date.now(); 
-            startChart(); 
-            // ẨN TIÊU ĐỀ KHI BẮT ĐẦU GÕ
+            isPlaying = true; startTime = Date.now(); startChart();
+            // Ẩn tiêu đề khi bắt đầu gõ
             document.getElementById('contentTitle').style.display = 'none';
         }
 
@@ -253,17 +209,6 @@
         typingDisplay.style.color = allWords[currentWordIdx].toLowerCase().startsWith(val.toLowerCase()) ? '#e2b714' : '#ca4754';
     }
 
-    // --- KEYBOARD & CHART ---
-    document.addEventListener('keydown', (e) => {
-        const k = document.querySelector(`.key[data-c="${e.code}"]`);
-        if(k) k.classList.add('pressed');
-        if(e.key === 'Tab') { e.preventDefault(); location.reload(); }
-    });
-    document.addEventListener('keyup', (e) => {
-        const k = document.querySelector(`.key[data-c="${e.code}"]`);
-        if(k) k.classList.remove('pressed');
-    });
-
     function startChart() {
         chartInterval = setInterval(() => {
             const m = (Date.now() - startTime)/60000;
@@ -288,6 +233,16 @@
             options:{plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#444'}}, y:{grid:{color:'#444'}}}}
         });
     }
+    
+    document.addEventListener('keydown', (e) => {
+        const k = document.querySelector(`.key[data-c="${e.code}"]`);
+        if(k) k.classList.add('pressed');
+        if(e.key === 'Tab') { e.preventDefault(); location.reload(); }
+    });
+    document.addEventListener('keyup', (e) => {
+        const k = document.querySelector(`.key[data-c="${e.code}"]`);
+        if(k) k.classList.remove('pressed');
+    });
 </script>
 </body>
 </html>
