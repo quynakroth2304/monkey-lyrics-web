@@ -1,6 +1,5 @@
 flask
-yt-dlp
 syncedlyrics
-beautifulsoup4
 google-generativeai
 gunicorn
+firebase-admin
