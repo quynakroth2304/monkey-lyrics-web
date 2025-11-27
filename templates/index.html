@@ -3,103 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monkey Ultimate Cloud</title>
+    <title>Nguyễn Thị Phương</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #323437; --main: #e2b714; --sub: #646669; --text: #d1d0c5; --err: #ca4754; --box: #2c2e31; }
-        body { background: var(--bg); color: var(--text); font-family: 'Roboto Mono', monospace; margin: 0; height: 100vh; overflow: hidden; display: flex; user-select: none; }
+        body { background: var(--bg); color: var(--text); font-family: 'Roboto Mono', monospace; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; }
 
-        /* --- UI COMPONENTS --- */
-        .btn-icon { background: transparent; border: none; color: var(--sub); font-size: 18px; cursor: pointer; padding: 10px; transition: 0.2s; }
-        .btn-icon:hover, .btn-icon.active { color: var(--main); }
-        
+        /* --- LOGO --- */
+        .logo { font-size: 24px; color: var(--sub); margin-bottom: 30px; }
+        .logo span { color: var(--main); }
+
+        /* --- TOOLBAR (Chọn chế độ & Thời gian) --- */
         .toolbar { display: flex; gap: 20px; margin-bottom: 30px; background: #252525; padding: 10px 30px; border-radius: 8px; font-size: 14px; }
         .tool-group { display: flex; gap: 10px; align-items: center; border-right: 1px solid #444; padding-right: 20px; }
         .tool-group:last-child { border: none; }
-        .tool-item { cursor: pointer; color: var(--sub); }
+        .tool-item { cursor: pointer; color: var(--sub); transition: 0.2s; }
         .tool-item:hover, .tool-item.active { color: var(--main); font-weight: bold; }
 
-        /* --- LOGIN --- */
-        #auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 999; display: flex; justify-content: center; align-items: center; }
-        .auth-box { background: var(--box); padding: 40px; border-radius: 10px; border: 2px solid var(--main); text-align: center; width: 350px; }
-        .auth-box input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #555; color: #fff; font-family: inherit; }
-        .auth-box button { width: 100%; padding: 10px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-
-        /* --- SIDEBAR --- */
-        #sidebar { width: 260px; background: #252525; border-right: 1px solid #444; display: flex; flex-direction: column; transition: 0.3s; z-index: 10; }
-        .user-info { padding: 20px; border-bottom: 1px solid #444; text-align: center; }
-        .song-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        .song-item { padding: 10px; color: var(--sub); cursor: pointer; border-radius: 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .song-item:hover { background: #333; color: var(--main); }
-
-        /* --- MAIN --- */
-        #main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .logo { font-size: 20px; color: var(--sub); margin-bottom: 20px; }
-        .logo span { color: var(--main); }
-
-        /* SEARCH & LIST RESULT */
-        #search-box input { background: transparent; border: none; border-bottom: 2px solid var(--sub); color: var(--text); font-size: 24px; padding: 10px; width: 500px; text-align: center; outline: none; }
-        #search-results { 
-            display: none; position: absolute; top: 60%; width: 500px; background: #222; border: 1px solid var(--main); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 50; 
+        /* --- SEARCH BOX --- */
+        #search-box { position: relative; width: 600px; text-align: center; }
+        #search-box input { 
+            background: transparent; border: none; border-bottom: 2px solid var(--sub); 
+            color: var(--text); font-size: 28px; padding: 10px; width: 100%; text-align: center; outline: none; 
         }
-        .search-item { padding: 15px; border-bottom: 1px solid #444; cursor: pointer; display: flex; justify-content: space-between; }
+        
+        /* SEARCH RESULTS POPUP */
+        #search-results { 
+            display: none; position: absolute; top: 100%; left: 0; width: 100%; 
+            background: #222; border: 1px solid var(--main); border-radius: 8px; 
+            max-height: 300px; overflow-y: auto; z-index: 50; margin-top: 10px;
+        }
+        .search-item { padding: 15px; border-bottom: 1px solid #444; cursor: pointer; display: flex; justify-content: space-between; text-align: left; color: var(--sub);}
         .search-item:hover { background: #333; color: var(--main); }
 
-        /* GAME UI */
+        /* --- GAME UI --- */
         #game-area { display: none; width: 90%; max-width: 900px; flex-direction: column; align-items: center; }
-        #timer-display { font-size: 40px; color: var(--main); margin-bottom: 20px; font-weight: bold; }
+        #timer-display { font-size: 60px; color: var(--main); margin-bottom: 10px; font-weight: bold; }
+        #contentTitle { color: var(--sub); margin-bottom: 20px; font-size: 18px; }
         
+        /* Đoạn văn */
         #paragraph-display { 
-            width: 100%; height: 120px; background: #292929; border-radius: 8px; padding: 20px; font-size: 22px; color: var(--sub); overflow: hidden; position: relative; text-align: left; line-height: 1.6; margin-bottom: 20px; 
+            width: 100%; height: 140px; background: #292929; border-radius: 8px; padding: 25px; 
+            font-size: 24px; color: var(--sub); overflow: hidden; position: relative; text-align: left; line-height: 1.6; margin-bottom: 30px; 
         }
-        #paragraph-display::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: linear-gradient(transparent, #292929); }
-        .word { display: inline-block; margin-right: 10px; padding: 2px 5px; opacity: 0.6; }
-        .word.active { opacity: 1; color: #fff; background: #444; }
+        #paragraph-display::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: linear-gradient(transparent, #292929); }
+        
+        .word { display: inline-block; margin-right: 12px; padding: 2px 5px; opacity: 0.5; }
+        .word.active { opacity: 1; color: #fff; background: #444; transform: scale(1.1); font-weight: bold; border-radius: 4px; }
         .word.done-correct { color: var(--main); opacity: 1; }
         .word.done-wrong { color: var(--err); text-decoration: line-through; opacity: 1; }
 
-        #input-container { width: 350px; height: 60px; background: var(--box); border: 2px solid var(--main); border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(226,183,20,0.1); margin-bottom: 20px; }
-        #typing-display { font-size: 28px; font-weight: bold; color: var(--text); }
+        /* Input Riêng */
+        #input-container { 
+            width: 400px; height: 70px; background: var(--box); border: 2px solid var(--main); 
+            border-radius: 10px; display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 0 25px rgba(226,183,20,0.1); margin-bottom: 30px; 
+        }
+        #typing-display { font-size: 36px; font-weight: bold; color: var(--text); white-space: pre; }
         #hiddenInput { opacity: 0; position: absolute; }
 
-        /* KEYBOARD */
-        #keyboard { transform: scale(0.9); display: flex; flex-direction: column; gap: 5px; align-items: center; }
-        .kb-row { display: flex; gap: 5px; }
-        .key { width: 45px; height: 45px; border: 1px solid var(--sub); border-radius: 5px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; }
+        /* Keyboard */
+        #keyboard { transform: scale(0.9); display: flex; flex-direction: column; gap: 6px; align-items: center; }
+        .kb-row { display: flex; gap: 6px; }
+        .key { width: 50px; height: 50px; border: 1px solid var(--sub); border-radius: 6px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; }
         .key.pressed { background: var(--main); color: #222; border-color: var(--main); transform: translateY(3px); }
-        .key.space { width: 250px; }
+        .key.space { width: 300px; }
 
-        /* RESULT */
+        /* RESULT SCREEN */
         #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
-        .chart-box { width: 700px; height: 350px; background:#292929; padding:20px; border-radius:10px; margin-top:20px; }
-        .stat-val { font-size: 60px; color: var(--main); font-weight: bold; }
+        .chart-box { width: 800px; height: 400px; background:#292929; padding:20px; border-radius:10px; margin-top:30px; }
+        .stat-val { font-size: 70px; color: var(--main); font-weight: bold; line-height: 1;}
+        .btn-restart { margin-top: 30px; padding: 15px 40px; background: var(--sub); border: none; color: #fff; font-size: 20px; cursor: pointer; border-radius: 8px; font-weight: bold; }
+        .btn-restart:hover { background: var(--main); color: #000; }
     </style>
 </head>
 <body>
 
-<div id="auth-overlay">
-    <div class="auth-box">
-        <h2 style="color:var(--main)">MONKEY CLOUD</h2>
-        <input type="text" id="user" placeholder="Username">
-        <input type="password" id="pass" placeholder="Password">
-        <button onclick="auth('login')" style="background:var(--main); border:none;">LOGIN</button>
-        <button onclick="auth('register')" style="background:transparent; border:1px solid var(--sub); color:var(--text);">REGISTER</button>
-        <p id="auth-msg" style="color:var(--err); margin-top:10px;"></p>
-    </div>
-</div>
-
-<div id="sidebar">
-    <div class="user-info">
-        <i class="fas fa-user-circle" style="font-size:40px; color:var(--sub)"></i>
-        <div id="display-user" style="margin-top:10px; font-weight:bold">Guest</div>
-    </div>
-    <div class="song-list" id="saved-list"></div>
-    <button onclick="location.reload()" style="padding:15px; background:#ca4754; color:white; border:none; cursor:pointer;">LOGOUT</button>
-</div>
-
-<div id="main">
     <div class="logo">dành riêng cho <span>Nguyễn Thị Phương</span> ❤️</div>
 
     <div class="toolbar" id="toolbar">
@@ -112,21 +93,21 @@
             <span class="tool-item" onclick="setTime(30, this)">30</span>
             <span class="tool-item active" onclick="setTime(60, this)">60</span>
             <span class="tool-item" onclick="setTime(120, this)">120</span>
-            <span class="tool-item" onclick="setTime(180, this)">180</span>
         </div>
     </div>
 
     <div id="search-box">
-        <input type="text" id="songQuery" placeholder="Nhập tên bài hát..." autocomplete="off">
-        <p id="statusMsg" style="color:var(--main); margin-top:10px;"></p>
+        <input type="text" id="songQuery" placeholder="Nhập tên bài hát (VD: Em Cưới Rồi)..." autocomplete="off">
+        <p id="statusMsg" style="color:var(--main); margin-top:15px; font-size: 14px;"></p>
         <div id="search-results"></div>
     </div>
 
     <div id="game-area">
         <div id="timer-display">60</div>
-        <h3 id="contentTitle" style="color:var(--sub)"></h3>
+        <div id="contentTitle">Song Title</div>
         
         <div id="paragraph-display"></div>
+        
         <div id="input-container" onclick="hiddenInput.focus()">
             <span id="typing-display"></span>
         </div>
@@ -135,29 +116,27 @@
         
         <div id="keyboard">
             <div class="kb-row"><div class="key" data-c="Backquote">`</div><div class="key" data-c="Digit1">1</div><div class="key" data-c="Digit2">2</div><div class="key" data-c="Digit3">3</div><div class="key" data-c="Digit4">4</div><div class="key" data-c="Digit5">5</div><div class="key" data-c="Digit6">6</div><div class="key" data-c="Digit7">7</div><div class="key" data-c="Digit8">8</div><div class="key" data-c="Digit9">9</div><div class="key" data-c="Digit0">0</div><div class="key" data-c="Minus">-</div><div class="key" data-c="Equal">=</div><div class="key" style="width:70px">Back</div></div>
-            <div class="kb-row"><div class="key" style="width:60px">Tab</div><div class="key" data-c="KeyQ">Q</div><div class="key" data-c="KeyW">W</div><div class="key" data-c="KeyE">E</div><div class="key" data-c="KeyR">R</div><div class="key" data-c="KeyT">T</div><div class="key" data-c="KeyY">Y</div><div class="key" data-c="KeyU">U</div><div class="key" data-c="KeyI">I</div><div class="key" data-c="KeyO">O</div><div class="key" data-c="KeyP">P</div><div class="key" data-c="BracketLeft">[</div><div class="key" data-c="BracketRight">]</div><div class="key" data-c="Backslash">\</div></div>
-            <div class="kb-row"><div class="key" style="width:70px">Caps</div><div class="key" data-c="KeyA">A</div><div class="key" data-c="KeyS">S</div><div class="key" data-c="KeyD">D</div><div class="key" data-c="KeyF">F</div><div class="key" data-c="KeyG">G</div><div class="key" data-c="KeyH">H</div><div class="key" data-c="KeyJ">J</div><div class="key" data-c="KeyK">K</div><div class="key" data-c="KeyL">L</div><div class="key" data-c="Semicolon">;</div><div class="key" data-c="Quote">'</div><div class="key" style="width:90px">Enter</div></div>
-            <div class="kb-row"><div class="key" style="width:90px">Shift</div><div class="key" data-c="KeyZ">Z</div><div class="key" data-c="KeyX">X</div><div class="key" data-c="KeyC">C</div><div class="key" data-c="KeyV">V</div><div class="key" data-c="KeyB">B</div><div class="key" data-c="KeyN">N</div><div class="key" data-c="KeyM">M</div><div class="key" data-c="Comma">,</div><div class="key" data-c="Period">.</div><div class="key" data-c="Slash">/</div><div class="key" style="width:90px">Shift</div></div>
+            <div class="kb-row"><div class="key" style="width:70px">Tab</div><div class="key" data-c="KeyQ">Q</div><div class="key" data-c="KeyW">W</div><div class="key" data-c="KeyE">E</div><div class="key" data-c="KeyR">R</div><div class="key" data-c="KeyT">T</div><div class="key" data-c="KeyY">Y</div><div class="key" data-c="KeyU">U</div><div class="key" data-c="KeyI">I</div><div class="key" data-c="KeyO">O</div><div class="key" data-c="KeyP">P</div><div class="key" data-c="BracketLeft">[</div><div class="key" data-c="BracketRight">]</div><div class="key" data-c="Backslash">\</div></div>
+            <div class="kb-row"><div class="key" style="width:80px">Caps</div><div class="key" data-c="KeyA">A</div><div class="key" data-c="KeyS">S</div><div class="key" data-c="KeyD">D</div><div class="key" data-c="KeyF">F</div><div class="key" data-c="KeyG">G</div><div class="key" data-c="KeyH">H</div><div class="key" data-c="KeyJ">J</div><div class="key" data-c="KeyK">K</div><div class="key" data-c="KeyL">L</div><div class="key" data-c="Semicolon">;</div><div class="key" data-c="Quote">'</div><div class="key" style="width:100px">Enter</div></div>
+            <div class="kb-row"><div class="key" style="width:100px">Shift</div><div class="key" data-c="KeyZ">Z</div><div class="key" data-c="KeyX">X</div><div class="key" data-c="KeyC">C</div><div class="key" data-c="KeyV">V</div><div class="key" data-c="KeyB">B</div><div class="key" data-c="KeyN">N</div><div class="key" data-c="KeyM">M</div><div class="key" data-c="Comma">,</div><div class="key" data-c="Period">.</div><div class="key" data-c="Slash">/</div><div class="key" style="width:100px">Shift</div></div>
             <div class="kb-row"><div class="key space" data-c="Space">Space</div></div>
         </div>
     </div>
 
     <div id="result-screen">
-        <div style="display:flex; gap:50px;">
-            <div><div style="color:var(--sub)">wpm</div><div class="stat-val" id="res-wpm">0</div></div>
-            <div><div style="color:var(--sub)">acc</div><div class="stat-val" id="res-acc">0%</div></div>
+        <div style="display:flex; gap:80px; text-align:center;">
+            <div><div style="color:var(--sub); font-size:24px;">wpm</div><div class="stat-val" id="res-wpm">0</div></div>
+            <div><div style="color:var(--sub); font-size:24px;">acc</div><div class="stat-val" id="res-acc" style="color:#fff">0%</div></div>
         </div>
         <div class="chart-box"><canvas id="wpmChart"></canvas></div>
-        <button onclick="location.reload()" style="margin-top:20px; padding:10px 30px; background:var(--main); border:none; font-weight:bold; cursor:pointer;">AGAIN</button>
+        <button class="btn-restart" onclick="location.reload()">New Test (Tab)</button>
     </div>
-</div>
 
 <script>
     // --- VARIABLES ---
-    let currentUser = null;
     let allWords = [];
     let currentWordIdx = 0;
-    let gameMode = 'lyrics'; // lyrics | quote
+    let gameMode = 'lyrics';
     let timeLimit = 60;
     let timerInterval = null;
     let timeLeft = 60;
@@ -172,7 +151,7 @@
     const typingDisplay = document.getElementById('typing-display');
     const paragraphDiv = document.getElementById('paragraph-display');
 
-    // --- SETUP ---
+    // --- SETUP MODE & TIMER ---
     function setMode(mode, el) {
         gameMode = mode;
         document.querySelectorAll('.tool-group:first-child .tool-item').forEach(e => e.classList.remove('active'));
@@ -180,11 +159,12 @@
         
         if(mode === 'quote') {
             document.getElementById('search-box').style.display = 'none';
-            document.getElementById('statusMsg').innerText = "Đang lấy trích dẫn...";
+            document.getElementById('statusMsg').innerText = "Đang lấy câu nói hay...";
             fetchQuote();
         } else {
             document.getElementById('search-box').style.display = 'block';
             document.getElementById('game-area').style.display = 'none';
+            document.getElementById('statusMsg').innerText = "";
         }
     }
 
@@ -196,36 +176,7 @@
         el.classList.add('active');
     }
 
-    // --- AUTH ---
-    async function auth(action) {
-        const u = document.getElementById('user').value;
-        const p = document.getElementById('pass').value;
-        const msg = document.getElementById('auth-msg');
-        if(!u || !p) return; msg.innerText = "Loading...";
-        try {
-            const res = await fetch('/api/auth', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action, username:u, password:p}) });
-            const data = await res.json();
-            if(data.success) {
-                if(action==='register') msg.innerText = "OK! Login now.";
-                else { currentUser = u; document.getElementById('display-user').innerText = u; document.getElementById('auth-overlay').style.display = 'none'; loadSongs(); }
-            } else msg.innerText = data.error;
-        } catch(e) { msg.innerText = "Error"; }
-    }
-    
-    async function loadSongs() {
-        const res = await fetch('/api/my-songs', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:currentUser}) });
-        const songs = await res.json();
-        const list = document.getElementById('saved-list');
-        list.innerHTML = '';
-        songs.forEach(s => {
-            const div = document.createElement('div');
-            div.className = 'song-item'; div.innerText = s.title;
-            div.onclick = () => startGame(s.title, s.lrc);
-            list.appendChild(div);
-        });
-    }
-
-    // --- SEARCH & SELECT ---
+    // --- API CALLS ---
     document.getElementById('songQuery').addEventListener('keypress', async (e) => {
         if(e.key === 'Enter') {
             const query = e.target.value;
@@ -237,11 +188,9 @@
             
             if(list.error) { status.innerText = list.error; return; }
             
-            // Show list
+            // Show list results
             const resBox = document.getElementById('search-results');
-            resBox.innerHTML = '';
-            resBox.style.display = 'block';
-            
+            resBox.innerHTML = ''; resBox.style.display = 'block';
             list.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'search-item';
@@ -256,13 +205,10 @@
     async function fetchLyrics(title) {
         document.getElementById('search-results').style.display = 'none';
         document.getElementById('statusMsg').innerText = "Đang tải lời bài hát...";
-        const res = await fetch('/get-lyrics', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title, username:currentUser}) });
+        const res = await fetch('/get-lyrics', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title}) });
         const data = await res.json();
         if(data.error) document.getElementById('statusMsg').innerText = data.error;
-        else {
-            loadSongs(); 
-            startGame(data.title, data.lrc);
-        }
+        else startGame(data.title, data.lrc);
     }
 
     async function fetchQuote() {
@@ -298,10 +244,7 @@
     document.addEventListener('click', () => { if(document.getElementById('game-area').style.display==='flex') hiddenInput.focus(); });
 
     hiddenInput.addEventListener('input', () => {
-        if(!isPlaying) { 
-            isPlaying = true; startTime = Date.now(); 
-            startChart(); startTimer(); 
-        }
+        if(!isPlaying) { isPlaying = true; startTime = Date.now(); startChart(); startTimer(); }
 
         let val = hiddenInput.value;
         if(val.includes(' ')) {
@@ -338,7 +281,6 @@
         typingDisplay.style.color = target.toLowerCase().startsWith(val.toLowerCase()) ? '#e2b714' : '#ca4754';
     }
 
-    // --- TIMING & CHART ---
     function startTimer() {
         timeLeft = timeLimit;
         timerInterval = setInterval(() => {
@@ -378,6 +320,7 @@
     document.addEventListener('keydown', (e) => {
         const k = document.querySelector(`.key[data-c="${e.code}"]`);
         if(k) k.classList.add('pressed');
+        if(e.key === 'Tab') { e.preventDefault(); location.reload(); }
     });
     document.addEventListener('keyup', (e) => {
         const k = document.querySelector(`.key[data-c="${e.code}"]`);
