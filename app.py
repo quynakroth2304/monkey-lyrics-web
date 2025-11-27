@@ -4,12 +4,12 @@ import google.generativeai as genai
 import os
 import yt_dlp
 import re
-import requests
 
 app = Flask(__name__)
 
 # --- CẤU HÌNH API GEMINI ---
-GEMINI_API_KEY = os.environ.get("AIzaSyCVSjO8txkpPYSC7IiPAjdi9kHzDM-CooA")
+# Lấy key từ biến môi trường trên Vercel
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-1.5-pro')
@@ -18,66 +18,95 @@ if GEMINI_API_KEY:
 def index():
     return render_template('index.html')
 
-# --- 1. TÌM LIST BÀI HÁT ---
+# --- 1. TÌM DANH SÁCH BÀI HÁT (HIỆN 5 BÀI) ---
 @app.route('/search-list', methods=['POST'])
 def search_list():
     query = request.json.get('query')
-    if not query: return jsonify({'error': 'Nhập tên bài đi!'}), 400
+    if not query: return jsonify({'error': 'Nhập tên bài đi bạn ơi!'}), 400
+    
     try:
-        ydl_opts = {'quiet': True, 'extract_flat': True, 'noplaylist': True, 'limit': 5}
+        # Cấu hình yt-dlp tìm nhanh, không tải video
+        ydl_opts = {
+            'quiet': True,
+            'extract_flat': True, # Chỉ lấy thông tin cơ bản
+            'noplaylist': True,
+            'limit': 5 # Lấy 5 kết quả
+        }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(f"ytsearch5:{query}", download=False)
             entries = info.get('entries', [])
-            return jsonify([{'title': i['title'], 'id': i['id']} for i in entries])
-    except Exception as e: return jsonify({'error': str(e)}), 500
+            
+            results = []
+            for item in entries:
+                results.append({
+                    'title': item['title'],
+                    'id': item['id']
+                })
+            return jsonify(results)
+    except Exception as e:
+        print(f"Lỗi tìm kiếm: {e}")
+        return jsonify({'error': 'Lỗi khi tìm bài hát.'}), 500
 
 # --- 2. LẤY LỜI BÀI HÁT ---
 @app.route('/get-lyrics', methods=['POST'])
 def get_lyrics():
     data = request.json
-    title = data.get('title')
+    title = data.get('title') # Đây có thể là tên bài hoặc Link
+    
     try:
-        clean_title = re.sub(r"[\(\[].*?[\)\]]", "", title).strip()
-        lrc = syncedlyrics.search(clean_title)
-        if not lrc: lrc = syncedlyrics.search(title)
-        if not lrc: return jsonify({'error': 'Không tìm thấy lời!'}), 404
-        return jsonify({'title': title, 'lrc': lrc})
-    except Exception as e: return jsonify({'error': str(e)}), 500
+        clean_title = title
 
-# --- 3. AI TỰ VIẾT VĂN MẪU (NEW UPDATE) ---
+        # Nếu là Link Youtube -> Lấy tên bài gốc trước
+        if title.startswith(('http://', 'https://')):
+            ydl_opts = {'quiet': True, 'skip_download': True, 'noplaylist': True}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(title, download=False)
+                clean_title = info.get('title', 'Unknown Song')
+
+        # Làm sạch tên (Bỏ Official, 4K...) để dễ tìm lời
+        clean_title = re.sub(r"[\(\[].*?[\)\]]", "", clean_title)
+        clean_title = clean_title.split('|')[0].strip()
+        
+        print(f"Đang tìm lời cho: {clean_title}")
+        lrc = syncedlyrics.search(clean_title)
+        
+        # Nếu không thấy thì tìm bằng tên gốc
+        if not lrc and clean_title != title:
+            lrc = syncedlyrics.search(title)
+        
+        if not lrc: 
+            return jsonify({'error': 'Không tìm thấy lời bài này!'}), 404
+            
+        return jsonify({'title': clean_title, 'lrc': lrc})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# --- 3. AI VIẾT VĂN MẪU (Theo độ dài từ) ---
 @app.route('/get-quote', methods=['POST'])
 def get_quote():
     # Lấy độ dài người dùng chọn (30, 50, 100...)
     length = int(request.json.get('length', 50))
     
     try:
-        # Prompt ra lệnh cho Gemini viết văn
+        if not GEMINI_API_KEY:
+            return jsonify({'content': "Chưa cấu hình Gemini API Key nên không viết văn được.", 'author': "System"})
+
         prompt = f"""
-        Hãy đóng vai một nhà văn Việt Nam. Viết một đoạn văn xuôi ngẫu nhiên, giàu cảm xúc và ý nghĩa.
-        Chủ đề: Cuộc sống, Tuổi trẻ, Tình yêu quê hương, hoặc Hà Nội/Sài Gòn xưa.
-        Độ dài yêu cầu: Khoảng {length} từ (hãy viết gần đúng số lượng này).
-        
-        QUAN TRỌNG: 
-        1. Chỉ trả về nội dung văn bản thuần túy.
-        2. Không có tiêu đề, không có dấu ngoặc kép bao quanh.
-        3. Văn phong phải mượt mà, đúng chính tả tiếng Việt.
+        Đóng vai một nhà văn Việt Nam. Hãy viết một đoạn văn xuôi giàu cảm xúc.
+        Chủ đề ngẫu nhiên: Tuổi trẻ, Quê hương, Tình yêu, Cuộc sống, hoặc Hà Nội/Sài Gòn xưa.
+        Độ dài: Khoảng {length} từ.
+        Yêu cầu: Chỉ trả về nội dung văn bản thuần túy, không có tiêu đề, không markdown.
         """
         
         response = model.generate_content(prompt)
-        content = response.text.strip()
+        content = response.text.strip().replace('*', '').replace('#', '').replace('"', '')
         
-        # Xử lý sạch văn bản nếu AI lỡ thêm markdown
-        content = content.replace('*', '').replace('#', '').replace('"', '')
-        
-        return jsonify({'content': content, 'author': 'Gemini Sáng Tác'})
+        return jsonify({'content': content, 'author': 'Gemini AI Sáng Tác'})
 
     except Exception as e:
-        print(f"AI Error: {e}")
-        # Fallback nếu AI bị lỗi hoặc hết quota thì dùng tạm câu này
-        return jsonify({
-            'content': "Đời người như một dòng sông, lững lờ trôi qua bao ghềnh thác để rồi hòa mình vào biển lớn mênh mông. Sống là phải biết yêu thương và sẻ chia.", 
-            'author': 'System Fallback'
-        })
+        print(f"Lỗi AI: {e}")
+        return jsonify({'content': "Không thể kết nối với AI lúc này. Hãy thử lại sau.", 'author': "Error"})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

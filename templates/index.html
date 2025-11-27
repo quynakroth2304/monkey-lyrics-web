@@ -15,9 +15,9 @@
         .logo span { color: var(--main); }
 
         /* TOOLBAR */
-        .toolbar { display: flex; gap: 15px; margin-bottom: 25px; background: #252525; padding: 10px 25px; border-radius: 8px; font-size: 14px; }
-        .tool-group { display: flex; gap: 15px; align-items: center; border-right: 1px solid #444; padding-right: 20px; }
-        .tool-group:last-child { border: none; padding-right: 0; }
+        .toolbar { display: flex; gap: 20px; margin-bottom: 25px; background: #252525; padding: 10px 30px; border-radius: 8px; font-size: 14px; }
+        .tool-group { display: flex; gap: 15px; align-items: center; }
+        .divider { width: 1px; height: 20px; background: #444; }
         .tool-item { cursor: pointer; color: var(--sub); transition: 0.2s; }
         .tool-item:hover, .tool-item.active { color: var(--main); font-weight: bold; }
         .tool-label { color: #555; font-size: 12px; margin-right: 5px; }
@@ -45,14 +45,12 @@
         #typing-display { font-size: 30px; font-weight: bold; color: var(--text); white-space: pre; }
         #hiddenInput { opacity: 0; position: absolute; }
 
-        /* KEYBOARD */
         #keyboard { transform: scale(0.85); display: flex; flex-direction: column; gap: 5px; align-items: center; }
         .kb-row { display: flex; gap: 5px; }
         .key { width: 48px; height: 48px; border: 1px solid var(--sub); border-radius: 5px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; font-size: 14px; }
         .key.pressed { background: var(--main); color: #222; border-color: var(--main); transform: translateY(3px); }
         .key.space { width: 300px; }
 
-        /* RESULT */
         #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
         .chart-box { width: 750px; height: 350px; background:#292929; padding:20px; border-radius:10px; margin-top:20px; }
         .stat-val { font-size: 60px; color: var(--main); font-weight: bold; line-height: 1;}
@@ -69,19 +67,18 @@
     <div class="toolbar" id="toolbar">
         <div class="tool-group">
             <span class="tool-item active" onclick="setMode('lyrics', this)"><i class="fas fa-music"></i> Lời Nhạc</span>
-            <span class="tool-item" onclick="setMode('quote', this)"><i class="fas fa-book"></i> Văn Mẫu</span>
+            <span class="tool-item" onclick="setMode('quote', this)"><i class="fas fa-book"></i> Văn Mẫu AI</span>
         </div>
-        
+        <div class="divider"></div>
         <div class="tool-group" id="time-options">
-            <span class="tool-label">Thời gian:</span>
+            <span class="tool-label">Thời gian (s):</span>
             <span class="tool-item" onclick="setOption('time', 15, this)">15</span>
             <span class="tool-item" onclick="setOption('time', 30, this)">30</span>
             <span class="tool-item active" onclick="setOption('time', 60, this)">60</span>
             <span class="tool-item" onclick="setOption('time', 120, this)">120</span>
         </div>
-
         <div class="tool-group" id="word-options" style="display:none;">
-            <span class="tool-label">Số từ:</span>
+            <span class="tool-label">Độ dài (từ):</span>
             <span class="tool-item active" onclick="setOption('word', 30, this)">30</span>
             <span class="tool-item" onclick="setOption('word', 50, this)">50</span>
             <span class="tool-item" onclick="setOption('word', 100, this)">100</span>
@@ -92,8 +89,8 @@
     </div>
 
     <div id="search-box">
-        <input type="text" id="songQuery" placeholder="Nhập tên bài hát..." autocomplete="off">
-        <div id="loading">Đang tải dữ liệu... <i class="fas fa-spinner fa-spin"></i></div>
+        <input type="text" id="songQuery" placeholder="Nhập tên bài hát HOẶC dán Link..." autocomplete="off">
+        <div id="loading">Đang xử lý... <i class="fas fa-spinner fa-spin"></i></div>
         <div id="search-results"></div>
     </div>
 
@@ -126,8 +123,7 @@
 
 <script>
     let allWords = [], currentWordIdx = 0, gameMode = 'lyrics';
-    let targetValue = 60; // Thời gian (s) hoặc Số từ (words)
-    let timerInterval = null, timeLeft = 0;
+    let targetValue = 60, timerInterval = null, timeLeft = 0;
     let isPlaying = false, startTime = 0, totalCorrect = 0, totalWrong = 0;
     let wpmHistory = [], labels = [], chartInterval = null;
 
@@ -136,32 +132,24 @@
     const paragraphDiv = document.getElementById('paragraph-display');
     const loading = document.getElementById('loading');
 
-    // SETUP
     function setMode(mode, el) {
         gameMode = mode;
         document.querySelectorAll('.tool-group:first-child .tool-item').forEach(e => e.classList.remove('active'));
         el.classList.add('active');
         
-        // Đổi thanh chọn options
         if(mode === 'quote') {
             document.getElementById('time-options').style.display = 'none';
             document.getElementById('word-options').style.display = 'flex';
             document.getElementById('search-box').style.display = 'none';
-            targetValue = 30; // Mặc định 30 từ
-            fetchQuote(targetValue);
+            // Gọi AI tạo văn 30 từ mặc định khi chuyển sang chế độ này
+            setOption('word', 30, document.querySelector('#word-options .tool-item:first-child'));
         } else {
             document.getElementById('time-options').style.display = 'flex';
             document.getElementById('word-options').style.display = 'none';
             document.getElementById('search-box').style.display = 'block';
             document.getElementById('game-area').style.display = 'none';
-            targetValue = 60; // Mặc định 60s
+            setOption('time', 60, document.querySelector('#time-options .tool-item:nth-child(4)'));
         }
-        
-        // Reset active class trong options mới
-        const group = mode === 'quote' ? 'word-options' : 'time-options';
-        const items = document.querySelectorAll(`#${group} .tool-item`);
-        items.forEach(i => i.classList.remove('active'));
-        items[0].classList.add('active'); // Active cái đầu tiên
     }
 
     function setOption(type, value, el) {
@@ -171,40 +159,43 @@
         el.classList.add('active');
         
         if(gameMode === 'quote') {
-            fetchQuote(value);
+            fetchQuote(value); // Gọi AI viết văn
         } else {
-            document.getElementById('info-bar').innerText = value;
+            document.getElementById('info-bar').innerText = value + "s";
         }
     }
 
-    // SEARCH
     document.getElementById('songQuery').addEventListener('keypress', async (e) => {
         if(e.key === 'Enter') {
-            const query = e.target.value;
-            loading.style.display = 'block';
+            const query = e.target.value.trim();
+            if(!query) return;
+            loading.innerText = "Đang xử lý..."; loading.style.display = 'block';
             document.getElementById('search-results').style.display = 'none';
-            
-            const res = await fetch('/search-list', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query}) });
-            const list = await res.json();
-            loading.style.display = 'none';
-            
-            if(list.error) return alert(list.error);
-            
-            const resBox = document.getElementById('search-results');
-            resBox.innerHTML = ''; resBox.style.display = 'block';
-            list.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'search-item';
-                div.innerHTML = `<span>${item.title}</span>`;
-                div.onclick = () => fetchLyrics(item.title);
-                resBox.appendChild(div);
-            });
+
+            if(query.startsWith('http')) {
+                fetchLyrics(query);
+            } else {
+                const res = await fetch('/search-list', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query}) });
+                const list = await res.json();
+                loading.style.display = 'none';
+                if(list.error) return alert(list.error);
+                
+                const resBox = document.getElementById('search-results');
+                resBox.innerHTML = ''; resBox.style.display = 'block';
+                list.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'search-item';
+                    div.innerHTML = `<span>${item.title}</span>`;
+                    div.onclick = () => fetchLyrics(item.title);
+                    resBox.appendChild(div);
+                });
+            }
         }
     });
 
     async function fetchLyrics(title) {
         document.getElementById('search-results').style.display = 'none';
-        loading.style.display = 'block';
+        loading.innerText = "Đang tải lời..."; loading.style.display = 'block';
         const res = await fetch('/get-lyrics', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({title}) });
         const data = await res.json();
         loading.style.display = 'none';
@@ -213,23 +204,24 @@
     }
 
     async function fetchQuote(length) {
+        loading.innerText = "Gemini đang viết " + length + " từ...";
         loading.style.display = 'block';
+        document.getElementById('game-area').style.display = 'none';
+        
         const res = await fetch('/get-quote', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({length}) });
         const data = await res.json();
         loading.style.display = 'none';
         startGame(data.author, data.content);
     }
 
-    // GAME
     function startGame(title, text) {
         document.getElementById('search-box').style.display = 'none';
-        document.getElementById('toolbar').style.display = 'none';
+        document.getElementById('toolbar').style.display = 'flex';
         document.getElementById('game-area').style.display = 'flex';
         document.getElementById('contentTitle').innerText = title;
         
-        // Hiển thị thông số ban đầu (Thời gian hoặc Số từ còn lại)
         if(gameMode === 'lyrics') {
-            document.getElementById('info-bar').innerText = targetValue;
+            document.getElementById('info-bar').innerText = targetValue + "s";
             timeLeft = targetValue;
         } else {
             document.getElementById('info-bar').innerText = targetValue + " từ";
@@ -254,12 +246,7 @@
     document.addEventListener('click', () => { if(document.getElementById('game-area').style.display==='flex') hiddenInput.focus(); });
 
     hiddenInput.addEventListener('input', () => {
-        if(!isPlaying) { 
-            isPlaying = true; startTime = Date.now(); 
-            startChart(); 
-            if(gameMode === 'lyrics') startTimer(); 
-        }
-
+        if(!isPlaying) { isPlaying = true; startTime = Date.now(); startChart(); if(gameMode==='lyrics') startTimer(); }
         let val = hiddenInput.value;
         if(val.includes(' ')) {
             const spaceIdx = val.indexOf(' ');
@@ -274,18 +261,12 @@
                     el.className = 'word done-wrong'; totalWrong += target.length;
                 }
                 currentWordIdx++;
-                
-                // End Game Check
                 if(currentWordIdx >= allWords.length) finishGame();
                 else {
                     const next = document.getElementById(`w-${currentWordIdx}`);
                     next.classList.add('active');
                     if(next.offsetTop > paragraphDiv.scrollTop + 60) paragraphDiv.scrollTop = next.offsetTop - 30;
-                    
-                    // Update counter for Quote mode
-                    if(gameMode === 'quote') {
-                        document.getElementById('info-bar').innerText = (allWords.length - currentWordIdx) + " từ";
-                    }
+                    if(gameMode === 'quote') document.getElementById('info-bar').innerText = (allWords.length - currentWordIdx) + " từ";
                 }
             }
             hiddenInput.value = remaining; typingDisplay.innerText = remaining; checkColor(remaining);
@@ -302,7 +283,7 @@
     function startTimer() {
         timerInterval = setInterval(() => {
             timeLeft--;
-            document.getElementById('info-bar').innerText = timeLeft;
+            document.getElementById('info-bar').innerText = timeLeft + "s";
             if(timeLeft <= 0) finishGame();
         }, 1000);
     }
