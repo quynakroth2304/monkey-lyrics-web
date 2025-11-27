@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monkey Lyrics Ultimate</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #323437;
+            --main-color: #e2b714;
+            --sub-color: #646669;
+            --text-color: #d1d0c5;
+            --error-color: #ca4754;
+            --box-bg: #2c2e31;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto Mono', monospace;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0; overflow: hidden; user-select: none;
+        }
+
+        #container { width: 90%; max-width: 1100px; text-align: center; display: flex; flex-direction: column; height: 95vh; }
+
+        .logo { margin: 10px 0; font-size: 20px; color: var(--sub-color); }
+        .logo span { color: var(--main-color); }
+
+        /* SEARCH */
+        #search-screen { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        #search-screen input {
+            background: transparent; border: none; border-bottom: 2px solid var(--sub-color);
+            color: var(--text-color); font-size: 24px; padding: 10px; width: 100%; text-align: center; outline: none;
+        }
+
+        /* GAME AREA */
+        #game-area { display: none; flex-grow: 1; flex-direction: column; width: 100%; position: relative; }
+        
+        /* 1. ĐOẠN VĂN */
+        #paragraph-display {
+            font-size: 24px; line-height: 1.8; color: var(--sub-color);
+            text-align: left; margin-bottom: 20px;
+            background: #252525; padding: 20px; border-radius: 10px;
+            height: 120px; overflow: hidden; position: relative;
+        }
+        #paragraph-display::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
+            background: linear-gradient(transparent, #252525);
+        }
+
+        .word { margin-right: 10px; display: inline-block; padding: 2px 5px; border-radius: 4px; transition: 0.2s; opacity: 0.5; }
+        .word.active { opacity: 1; background: #444; color: #fff; transform: scale(1.1); font-weight: bold; border: 1px solid var(--sub-color); } 
+        .word.done-correct { color: var(--main-color); opacity: 1; }
+        .word.done-wrong { color: var(--error-color); text-decoration: line-through; opacity: 1; }
+
+        /* 2. Ô NHẬP LIỆU */
+        #current-word-container {
+            margin: 10px auto; width: 300px; height: 60px;
+            background: var(--box-bg); border: 2px solid var(--main-color);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            position: relative; box-shadow: 0 0 15px rgba(226, 183, 20, 0.1);
+        }
+        #user-typing-display { font-size: 32px; font-weight: bold; color: var(--text-color); white-space: pre; }
+        #cursor-blink { width: 3px; height: 30px; background: var(--main-color); margin-left: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        #hiddenInput { opacity: 0; position: absolute; top: -9999px; }
+
+        /* 3. BÀN PHÍM ẢO (ĐÃ KHÔI PHỤC) */
+        #keyboard { margin-top: auto; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 5px; transform: scale(0.85); transform-origin: bottom center;}
+        .kb-row { display: flex; gap: 5px; }
+        .key {
+            width: 45px; height: 45px; border: 1px solid var(--sub-color); border-radius: 6px;
+            color: var(--sub-color); font-weight: bold; font-size: 16px;
+            display: flex; align-items: center; justify-content: center; transition: 0.05s;
+        }
+        .key.pressed { background: var(--main-color); color: #222; border-color: var(--main-color); transform: translateY(2px); box-shadow: 0 0 8px var(--main-color); }
+        .key.space { width: 250px; } 
+        .key.backspace { width: 90px; font-size: 12px; }
+        .key.tab, .key.caps, .key.enter, .key.shift { width: 80px; font-size: 12px; }
+
+        /* 4. RESULT SCREEN (REPORT) */
+        #result-screen {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); z-index: 100;
+            padding: 20px; box-sizing: border-box;
+            flex-direction: column; justify-content: center;
+        }
+        .report-grid { display: grid; grid-template-columns: 200px 1fr; gap: 30px; height: 70%; }
+        .stats-col { text-align: left; display: flex; flex-direction: column; justify-content: center; }
+        .stat-group { margin-bottom: 30px; }
+        .stat-label { font-size: 24px; color: var(--sub-color); margin-bottom: 5px; }
+        .stat-value { font-size: 64px; color: var(--main-color); font-weight: bold; line-height: 1; }
+        .chart-col { background: #2c2e31; border-radius: 10px; padding: 10px; position: relative; }
+        .bottom-stats { display: flex; justify-content: space-around; margin-top: 20px; color: var(--sub-color); font-size: 14px; }
+        .bottom-stats span { color: var(--text-color); font-weight: bold; }
+        .btn-restart { background: var(--sub-color); color: var(--bg-color); padding: 10px 30px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-top: 20px; }
+        .btn-restart:hover { background: var(--main-color); }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <div class="logo"><span>ultimate</span>type<span>.v8</span></div>
+
+    <div id="search-screen">
+        <input type="text" id="songQuery" placeholder="paste link youtube & enter..." autocomplete="off">
+        <p id="statusMsg" style="color: var(--main-color); margin-top: 15px;"></p>
+    </div>
+
+    <div id="game-area">
+        <div style="color: var(--main-color); margin-bottom: 5px;">
+            <span id="songTitle">Title</span>
+        </div>
+        
+        <div id="paragraph-display"></div>
+
+        <div id="current-word-container" onclick="focusInput()">
+            <span id="user-typing-display"></span><span id="cursor-blink"></span>
+        </div>
+        
+        <input type="text" id="hiddenInput" autocomplete="off">
+        
+        <div id="keyboard">
+            <div class="kb-row"><div class="key" data-code="Backquote">`</div><div class="key" data-code="Digit1">1</div><div class="key" data-code="Digit2">2</div><div class="key" data-code="Digit3">3</div><div class="key" data-code="Digit4">4</div><div class="key" data-code="Digit5">5</div><div class="key" data-code="Digit6">6</div><div class="key" data-code="Digit7">7</div><div class="key" data-code="Digit8">8</div><div class="key" data-code="Digit9">9</div><div class="key" data-code="Digit0">0</div><div class="key" data-code="Minus">-</div><div class="key" data-code="Equal">=</div><div class="key backspace" data-code="Backspace">Back</div></div>
+            <div class="kb-row"><div class="key tab" data-code="Tab">Tab</div><div class="key" data-code="KeyQ">Q</div><div class="key" data-code="KeyW">W</div><div class="key" data-code="KeyE">E</div><div class="key" data-code="KeyR">R</div><div class="key" data-code="KeyT">T</div><div class="key" data-code="KeyY">Y</div><div class="key" data-code="KeyU">U</div><div class="key" data-code="KeyI">I</div><div class="key" data-code="KeyO">O</div><div class="key" data-code="KeyP">P</div><div class="key" data-code="BracketLeft">[</div><div class="key" data-code="BracketRight">]</div><div class="key" data-code="Backslash">\</div></div>
+            <div class="kb-row"><div class="key caps" data-code="CapsLock">Caps</div><div class="key" data-code="KeyA">A</div><div class="key" data-code="KeyS">S</div><div class="key" data-code="KeyD">D</div><div class="key" data-code="KeyF">F</div><div class="key" data-code="KeyG">G</div><div class="key" data-code="KeyH">H</div><div class="key" data-code="KeyJ">J</div><div class="key" data-code="KeyK">K</div><div class="key" data-code="KeyL">L</div><div class="key" data-code="Semicolon">;</div><div class="key" data-code="Quote">'</div><div class="key enter" data-code="Enter">Enter</div></div>
+            <div class="kb-row"><div class="key shift" data-code="ShiftLeft">Shift</div><div class="key" data-code="KeyZ">Z</div><div class="key" data-code="KeyX">X</div><div class="key" data-code="KeyC">C</div><div class="key" data-code="KeyV">V</div><div class="key" data-code="KeyB">B</div><div class="key" data-code="KeyN">N</div><div class="key" data-code="KeyM">M</div><div class="key" data-code="Comma">,</div><div class="key" data-code="Period">.</div><div class="key" data-code="Slash">/</div><div class="key shift" data-code="ShiftRight">Shift</div></div>
+            <div class="kb-row"><div class="key space" data-code="Space">Space</div></div>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="report-grid">
+            <div class="stats-col">
+                <div class="stat-group">
+                    <div class="stat-label">wpm</div><div class="stat-value" id="final-wpm">0</div>
+                </div>
+                <div class="stat-group">
+                    <div class="stat-label">acc</div><div class="stat-value acc" id="final-acc">0%</div>
+                </div>
+            </div>
+            <div class="chart-col">
+                <canvas id="wpmChart"></canvas>
+            </div>
+        </div>
+        <div class="bottom-stats">
+            <div>Character: <span id="char-stats">0/0/0/0</span></div>
+            <div>Time: <span id="time-stats">0s</span></div>
+        </div>
+        <div class="actions">
+            <button class="btn-restart" onclick="location.reload()">New Song (Tab)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- VARIABLES ---
+    let allWords = [];
+    let currentWordIdx = 0;
+    let startTime = 0;
+    let isPlaying = false;
+    
+    let totalCorrectChars = 0;
+    let totalWrongChars = 0;
+    let chartInterval = null;
+    let wpmHistory = [];
+    let labels = [];
+    let myChart = null;
+
+    const paragraphDiv = document.getElementById('paragraph-display');
+    const userTypingDisplay = document.getElementById('user-typing-display');
+    const hiddenInput = document.getElementById('hiddenInput');
+
+    // --- SEARCH ---
+    document.getElementById('songQuery').addEventListener("keypress", async (e) => {
+        if (e.key === "Enter") {
+            const query = e.target.value.trim();
+            if(!query) return;
+            document.getElementById('statusMsg').innerText = "fetching...";
+            e.target.disabled = true;
+            try {
+                const res = await fetch('/get-song', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: query})
+                });
+                const data = await res.json();
+                if(data.error) {
+                    document.getElementById('statusMsg').innerText = data.error; e.target.disabled = false;
+                } else {
+                    setupGame(data);
+                }
+            } catch (err) { document.getElementById('statusMsg').innerText = "Error"; }
+        }
+    });
+
+    function setupGame(data) {
+        document.getElementById('search-screen').style.display = 'none';
+        document.getElementById('game-area').style.display = 'flex';
+        document.getElementById('songTitle').innerText = data.title;
+        const cleanText = data.lrc.replace(/\[.*?\]/g, ' '); 
+        allWords = cleanText.split(/\s+/).filter(w => w.length > 0);
+        renderParagraph();
+        focusInput();
+    }
+
+    function renderParagraph() {
+        paragraphDiv.innerHTML = '';
+        allWords.forEach((word, idx) => {
+            const span = document.createElement('span');
+            span.innerText = word;
+            span.className = 'word';
+            span.id = `word-${idx}`;
+            if (idx === 0) span.classList.add('active');
+            paragraphDiv.appendChild(span);
+        });
+    }
+
+    // --- TYPING CORE ---
+    document.addEventListener('click', () => focusInput());
+    function focusInput() { hiddenInput.focus(); }
+
+    function startTracking() {
+        if (isPlaying) return;
+        isPlaying = true;
+        startTime = Date.now();
+        wpmHistory = []; labels = [];
+        chartInterval = setInterval(() => {
+            const timeElapsed = (Date.now() - startTime) / 60000;
+            if (timeElapsed > 0) {
+                const currentWPM = Math.round((totalCorrectChars / 5) / timeElapsed);
+                wpmHistory.push(currentWPM);
+                labels.push(Math.round(timeElapsed * 60));
+            }
+        }, 1000);
+    }
+
+    hiddenInput.addEventListener('input', (e) => {
+        startTracking();
+        let val = hiddenInput.value;
+
+        if (val.includes(' ')) {
+            const spaceIndex = val.indexOf(' ');
+            const wordToSubmit = val.substring(0, spaceIndex);
+            const remainingText = val.substring(spaceIndex + 1);
+
+            if (wordToSubmit.length >= 0) {
+                const targetWord = allWords[currentWordIdx];
+                const wordElement = document.getElementById(`word-${currentWordIdx}`);
+
+                if (typedMatch(wordToSubmit, targetWord)) {
+                    wordElement.className = 'word done-correct';
+                    totalCorrectChars += targetWord.length + 1; 
+                } else {
+                    wordElement.className = 'word done-wrong';
+                    totalWrongChars += targetWord.length;
+                }
+
+                currentWordIdx++;
+                if (currentWordIdx >= allWords.length) { finishGame(); return; }
+
+                const nextWord = document.getElementById(`word-${currentWordIdx}`);
+                if(nextWord) {
+                    nextWord.classList.add('active');
+                    if (nextWord.offsetTop > paragraphDiv.scrollTop + 80) {
+                        paragraphDiv.scrollTop = nextWord.offsetTop - 40;
+                    }
+                }
+            }
+            hiddenInput.value = remainingText;
+            userTypingDisplay.innerText = remainingText;
+            updateColor(remainingText);
+        } else {
+            userTypingDisplay.innerText = val;
+            updateColor(val);
+        }
+    });
+
+    function typedMatch(typed, target) { return typed.toLowerCase() === target.toLowerCase(); }
+
+    function updateColor(val) {
+        if(currentWordIdx >= allWords.length) return;
+        const targetWord = allWords[currentWordIdx];
+        if (targetWord.toLowerCase().startsWith(val.toLowerCase())) {
+            userTypingDisplay.style.color = '#e2b714';
+        } else {
+            userTypingDisplay.style.color = '#ca4754';
+        }
+    }
+
+    // --- KEYBOARD LIGHTING ---
+    document.addEventListener('keydown', (e) => {
+        const key = document.querySelector(`.key[data-code="${e.code}"]`);
+        if(key) key.classList.add('pressed');
+    });
+    document.addEventListener('keyup', (e) => {
+        const key = document.querySelector(`.key[data-code="${e.code}"]`);
+        if(key) key.classList.remove('pressed');
+    });
+
+    // --- CHART & REPORT ---
+    function finishGame() {
+        clearInterval(chartInterval);
+        const endTime = Date.now();
+        const durationMin = (endTime - startTime) / 60000;
+        const wpm = Math.round((totalCorrectChars / 5) / durationMin);
+        const totalChars = totalCorrectChars + totalWrongChars;
+        const acc = Math.round((totalCorrectChars / totalChars) * 100);
+
+        document.getElementById('game-area').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'flex';
+        document.getElementById('final-wpm').innerText = wpm;
+        document.getElementById('final-acc').innerText = isNaN(acc) ? "0%" : acc + "%";
+        document.getElementById('char-stats').innerText = `${totalCorrectChars}/${totalWrongChars}/0/0`;
+        document.getElementById('time-stats').innerText = Math.round(durationMin * 60) + "s";
+
+        renderChart(wpmHistory, labels);
+    }
+
+    function renderChart(dataWPM, dataLabels) {
+        const ctx = document.getElementById('wpmChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dataLabels,
+                datasets: [{
+                    label: 'WPM', data: dataWPM,
+                    borderColor: '#e2b714', backgroundColor: 'rgba(226, 183, 20, 0.1)',
+                    borderWidth: 2, pointRadius: 2, tension: 0.4, fill: true
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: '#444' }, ticks: { color: '#666' } },
+                    y: { grid: { color: '#444' }, ticks: { color: '#666' }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if(e.key === 'Tab') { e.preventDefault(); location.reload(); }
+    });
+</script>
+
+</body>
+</html>
