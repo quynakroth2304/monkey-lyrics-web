@@ -17,7 +17,7 @@ if GEMINI_API_KEY:
     model = genai.GenerativeModel('gemini-1.5-pro')
 
 def get_db_connection():
-    db_url = os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL")
+    db_url = os.environ.get("postgresql://neondb_owner:npg_CfJR2LVcpg4M@ep-shiny-moon-a1uohyjc-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require") or os.environ.get("postgresql://neondb_owner:npg_CfJR2LVcpg4M@ep-shiny-moon-a1uohyjc-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require")
     if not db_url: raise Exception("Chưa cấu hình Database URL!")
     conn = psycopg2.connect(db_url)
     return conn
