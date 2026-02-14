@@ -3,246 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nguyễn Thị Phương</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>Perfect 3D Hollow Heart</title>
     <style>
-        :root { --bg: #323437; --main: #e2b714; --sub: #646669; --text: #d1d0c5; --err: #ca4754; --box: #2c2e31; }
-        body { background: var(--bg); color: var(--text); font-family: 'Roboto Mono', monospace; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; }
-
-        .logo { font-size: 22px; color: var(--sub); margin-bottom: 40px; letter-spacing: 1px;}
-        .logo span { color: var(--main); font-weight: bold; }
-
-        /* SEARCH AREA */
-        #search-box { position: relative; width: 600px; text-align: center; margin-bottom: 20px;}
-        #search-box input { 
-            background: transparent; border: none; border-bottom: 2px solid var(--sub); 
-            color: var(--text); font-size: 26px; padding: 12px; width: 100%; text-align: center; outline: none; 
-            transition: 0.3s;
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
         }
-        #search-box input:focus { border-bottom-color: var(--main); }
-        
-        #loading { display: none; margin-top: 20px; color: var(--main); font-size: 16px; }
-        
-        /* GAME UI */
-        #game-area { display: none; width: 90%; max-width: 900px; flex-direction: column; align-items: center; }
-        
-        /* Tiêu đề bài hát (Sẽ ẩn khi gõ) */
-        #contentTitle { color: var(--main); margin-bottom: 20px; font-size: 24px; font-weight: bold; transition: opacity 0.3s; }
-        
-        #info-bar { color: var(--sub); margin-bottom: 10px; font-size: 14px; }
-        
-        #paragraph-display { 
-            width: 100%; height: 140px; background: #292929; border-radius: 10px; padding: 25px; 
-            font-size: 24px; color: var(--sub); overflow: hidden; position: relative; text-align: left; line-height: 1.6; margin-bottom: 30px; 
+        canvas {
+            display: block;
         }
-        #paragraph-display::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: linear-gradient(transparent, #292929); }
-        
-        .word { display: inline-block; margin-right: 12px; padding: 2px 5px; opacity: 0.5; }
-        .word.active { opacity: 1; color: #fff; background: #444; transform: scale(1.1); border-radius: 4px; font-weight: bold; }
-        .word.done-correct { color: var(--main); opacity: 1; }
-        .word.done-wrong { color: var(--err); text-decoration: line-through; opacity: 1; }
-
-        #input-container { 
-            width: 400px; height: 70px; background: var(--box); border: 2px solid var(--main); 
-            border-radius: 10px; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 0 25px rgba(226,183,20,0.1); margin-bottom: 30px; 
-        }
-        #typing-display { font-size: 36px; font-weight: bold; color: var(--text); white-space: pre; }
-        #hiddenInput { opacity: 0; position: absolute; }
-
-        /* KEYBOARD */
-        #keyboard { transform: scale(0.9); display: flex; flex-direction: column; gap: 6px; align-items: center; }
-        .kb-row { display: flex; gap: 6px; }
-        .key { width: 50px; height: 50px; border: 1px solid var(--sub); border-radius: 6px; color: var(--sub); display: flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.05s; font-size: 14px; }
-        .key.pressed { background: var(--main); color: #222; border-color: var(--main); transform: translateY(3px); box-shadow: 0 0 10px var(--main); }
-        
-        .key.space { width: 300px; } .key.back { width: 70px; } .key.tab { width: 70px; }
-        .key.caps { width: 80px; } .key.enter { width: 90px; } .key.shift { width: 100px; }
-
-        /* RESULT */
-        #result-screen { position: absolute; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
-        .chart-box { width: 800px; height: 400px; background:#292929; padding:20px; border-radius:10px; margin-top:30px; }
-        .stat-val { font-size: 70px; color: var(--main); font-weight: bold; line-height: 1;}
-        .btn-restart { margin-top: 30px; padding: 15px 40px; background: var(--sub); border: none; color: #fff; font-size: 20px; cursor: pointer; border-radius: 8px; font-weight: bold; }
-        .btn-restart:hover { background: var(--main); color: #000; }
     </style>
 </head>
 <body>
 
-    <div class="logo">dành riêng cho <span>Nguyễn Thị Phương</span> ❤️</div>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 
-    <div id="search-box">
-        <input type="text" id="songQuery" placeholder="Nhập tên bài hát hoặc dán Link..." autocomplete="off">
-        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Đang tìm & Tải lời...</div>
-    </div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-    <div id="game-area">
-        <div id="info-bar">0 từ</div>
-        <div id="contentTitle">Song Title</div>
-        
-        <div id="paragraph-display"></div>
-        
-        <div id="input-container" onclick="hiddenInput.focus()">
-            <span id="typing-display"></span>
-        </div>
-        <input type="text" id="hiddenInput" autocomplete="off">
-        
-        <div id="keyboard">
-            <div class="kb-row"><div class="key" data-c="Backquote">`</div><div class="key" data-c="Digit1">1</div><div class="key" data-c="Digit2">2</div><div class="key" data-c="Digit3">3</div><div class="key" data-c="Digit4">4</div><div class="key" data-c="Digit5">5</div><div class="key" data-c="Digit6">6</div><div class="key" data-c="Digit7">7</div><div class="key" data-c="Digit8">8</div><div class="key" data-c="Digit9">9</div><div class="key" data-c="Digit0">0</div><div class="key" data-c="Minus">-</div><div class="key" data-c="Equal">=</div><div class="key back">Back</div></div>
-            <div class="kb-row"><div class="key tab">Tab</div><div class="key" data-c="KeyQ">Q</div><div class="key" data-c="KeyW">W</div><div class="key" data-c="KeyE">E</div><div class="key" data-c="KeyR">R</div><div class="key" data-c="KeyT">T</div><div class="key" data-c="KeyY">Y</div><div class="key" data-c="KeyU">U</div><div class="key" data-c="KeyI">I</div><div class="key" data-c="KeyO">O</div><div class="key" data-c="KeyP">P</div><div class="key" data-c="BracketLeft">[</div><div class="key" data-c="BracketRight">]</div><div class="key" data-c="Backslash">\</div></div>
-            <div class="kb-row"><div class="key caps">Caps</div><div class="key" data-c="KeyA">A</div><div class="key" data-c="KeyS">S</div><div class="key" data-c="KeyD">D</div><div class="key" data-c="KeyF">F</div><div class="key" data-c="KeyG">G</div><div class="key" data-c="KeyH">H</div><div class="key" data-c="KeyJ">J</div><div class="key" data-c="KeyK">K</div><div class="key" data-c="KeyL">L</div><div class="key" data-c="Semicolon">;</div><div class="key" data-c="Quote">'</div><div class="key enter">Enter</div></div>
-            <div class="kb-row"><div class="key shift">Shift</div><div class="key" data-c="KeyZ">Z</div><div class="key" data-c="KeyX">X</div><div class="key" data-c="KeyC">C</div><div class="key" data-c="KeyV">V</div><div class="key" data-c="KeyB">B</div><div class="key" data-c="KeyN">N</div><div class="key" data-c="KeyM">M</div><div class="key" data-c="Comma">,</div><div class="key" data-c="Period">.</div><div class="key" data-c="Slash">/</div><div class="key shift">Shift</div></div>
-            <div class="kb-row"><div class="key space" data-c="Space">Space</div></div>
-        </div>
-    </div>
+        // --- CẤU HÌNH ---
+        const SETTINGS = {
+            particles: 15000,          
+            color: 0xff0055,           
+            size: 1.2,                 
+            pulseSpeed: 3.5,           
+            textRing1: "Anh Yêu Em ❤️ ",
+            textRing2: "Mãi Bên Nhau ❤️ "
+        };
 
-    <div id="result-screen">
-        <div style="display:flex; gap:60px; text-align:center;">
-            <div><div style="color:var(--sub); font-size:18px;">Tốc độ (WPM)</div><div class="stat-val" id="res-wpm">0</div></div>
-            <div><div style="color:var(--sub); font-size:18px;">Chính xác</div><div class="stat-val" id="res-acc" style="color:#fff">0%</div></div>
-        </div>
-        <div class="chart-box"><canvas id="wpmChart"></canvas></div>
-        <button class="btn-restart" onclick="location.reload()">Bài Khác (Tab)</button>
-    </div>
+        let scene, camera, renderer, composer, controls;
+        let heartSystem, ring1, ring2, magicParticles; // Thêm biến magicParticles
+        let time = 0;
 
-<script>
-    let allWords = [], currentWordIdx = 0;
-    let isPlaying = false, startTime = 0, totalCorrect = 0, totalWrong = 0;
-    let wpmHistory = [], labels = [], chartInterval = null;
+        init();
+        animate();
 
-    const hiddenInput = document.getElementById('hiddenInput');
-    const typingDisplay = document.getElementById('typing-display');
-    const paragraphDiv = document.getElementById('paragraph-display');
-    const loading = document.getElementById('loading');
+        function init() {
+            // 1. Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x000000, 0.002);
 
-    // --- SEARCH AUTO ---
-    document.getElementById('songQuery').addEventListener('keypress', async (e) => {
-        if(e.key === 'Enter') {
-            const query = e.target.value.trim();
-            if(!query) return;
+            // 2. Camera
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 20, 100); 
+
+            // 3. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            document.body.appendChild(renderer.domElement);
+
+            // 4. Post-processing
+            const renderScene = new RenderPass(scene, camera);
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0.1;
+            bloomPass.strength = 1.2; 
+            bloomPass.radius = 0.5;
+
+            composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+            composer.addPass(bloomPass);
+
+            // 5. Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.autoRotate = true;     
+            controls.autoRotateSpeed = 1.0; 
+            controls.maxPolarAngle = Math.PI / 1.5; 
+
+            // 6. Tạo vật thể
+            createHollowHeart();
+            createStandingRings(); // Hàm mới: Dựng chữ đứng
+            createMagicParticles(); // Hàm mới: Tạo đốm trắng quanh chữ
+            createSpaceDust();     // Bụi vũ trụ xa xa
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        // --- TẠO TRÁI TIM RỖNG ---
+        function createHollowHeart() {
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+            const colors = [];
+            const sizes = [];
+
+            const colorBase = new THREE.Color(SETTINGS.color);
+            const colorTip = new THREE.Color(0xffaaaa); 
+
+            for (let i = 0; i < SETTINGS.particles; i++) {
+                const u = Math.random() * Math.PI * 2;
+                const v = Math.random() * Math.PI; 
+
+                let x = 16 * Math.pow(Math.sin(u), 3) * Math.sin(v);
+                let y = (13 * Math.cos(u) - 5 * Math.cos(2*u) - 2 * Math.cos(3*u) - Math.cos(4*u));
+                let z = 16 * Math.pow(Math.sin(u), 3) * Math.cos(v); 
+
+                const thickness = 0.9 + Math.random() * 0.1;
+                x *= thickness; y *= thickness; z *= thickness;
+                y += 5;
+
+                positions.push(x, y, z);
+
+                const normalizedY = (y + 10) / 25; 
+                const finalColor = colorBase.clone().lerp(colorTip, normalizedY * 0.5);
+                colors.push(finalColor.r, finalColor.g, finalColor.b);
+
+                sizes.push(Math.random() * 1.5 + 0.5);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
             
-            loading.style.display = 'block';
-            
-            // Gọi API tự động chọn bài
-            const res = await fetch('/get-song-auto', { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body:JSON.stringify({query}) 
+            geometry.userData.originalPositions = Float32Array.from(positions);
+
+            const material = new THREE.PointsMaterial({
+                size: SETTINGS.size,
+                vertexColors: true,
+                map: getSoftTexture(),
+                blending: THREE.AdditiveBlending,
+                depthWrite: false, 
+                transparent: true,
+                opacity: 0.8       
             });
-            const data = await res.json();
+
+            heartSystem = new THREE.Points(geometry, material);
+            scene.add(heartSystem);
+        }
+
+        // --- VÒNG CHỮ ĐỨNG (Dùng Cylinder thay vì Plane) ---
+        function createStandingRings() {
+            // Vòng 1 (Nhỏ, bên trong)
+            // CylinderGeometry(bán kính trên, bán kính dưới, chiều cao, segments, mở nắp)
+            const geo1 = new THREE.CylinderGeometry(25, 25, 5, 64, 1, true);
+            const mat1 = new THREE.MeshBasicMaterial({ 
+                // Lặp lại chuỗi text 2 lần cho nó dài ra
+                map: createStraightTextTexture(SETTINGS.textRing1.repeat(3)), 
+                transparent: true, 
+                opacity: 0.8, 
+                blending: THREE.AdditiveBlending, 
+                side: THREE.DoubleSide, 
+                depthWrite: false 
+            });
+            ring1 = new THREE.Mesh(geo1, mat1);
+            ring1.position.y = -12; // Hạ thấp xuống dưới tim
+            scene.add(ring1);
+
+            // Vòng 2 (Lớn, bên ngoài)
+            const geo2 = new THREE.CylinderGeometry(35, 35, 7, 64, 1, true);
+            const mat2 = new THREE.MeshBasicMaterial({ 
+                map: createStraightTextTexture(SETTINGS.textRing2.repeat(4)), 
+                transparent: true, 
+                opacity: 0.5, 
+                blending: THREE.AdditiveBlending, 
+                side: THREE.DoubleSide, 
+                depthWrite: false 
+            });
+            ring2 = new THREE.Mesh(geo2, mat2);
+            ring2.position.y = -13; 
+            scene.add(ring2);
+        }
+
+        // --- ĐỐM TRẮNG HUYỀN ẢO (Magic Particles) ---
+        function createMagicParticles() {
+            const particleCount = 300;
+            const geo = new THREE.BufferGeometry();
+            const pos = [];
+            const sizes = [];
+
+            for(let i=0; i<particleCount; i++) {
+                // Tạo vị trí ngẫu nhiên quanh khu vực vòng chữ
+                const angle = Math.random() * Math.PI * 2;
+                // Bán kính từ 20 đến 45 (bao quanh cả 2 vòng chữ)
+                const radius = 20 + Math.random() * 25; 
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                // Chiều cao dao động quanh khu vực chữ
+                const y = -15 + Math.random() * 15; 
+
+                pos.push(x, y, z);
+                sizes.push(Math.random() * 1.0); // Kích thước hạt
+            }
+
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            geo.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+
+            // Texture đốm trắng đơn giản
+            const mat = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 1.0,
+                map: getSoftTexture(), // Tận dụng lại texture tròn mờ của tim
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            magicParticles = new THREE.Points(geo, mat);
+            scene.add(magicParticles);
+        }
+
+        // --- Helper Vẽ Chữ Thẳng (Để map vào hình trụ) ---
+        function createStraightTextTexture(text) {
+            const canvas = document.createElement('canvas');
+            // Canvas dài ngang để chứa chữ
+            canvas.width = 2048; 
+            canvas.height = 256; 
+            const ctx = canvas.getContext('2d');
             
-            loading.style.display = 'none';
-            if(data.error) alert(data.error);
-            else startGame(data.title, data.lrc);
-        }
-    });
+            // Background trong suốt
+            ctx.fillStyle = 'rgba(0,0,0,0)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // --- GAME START ---
-    function startGame(title, text) {
-        document.getElementById('search-box').style.display = 'none';
-        document.getElementById('game-area').style.display = 'flex';
-        
-        const titleEl = document.getElementById('contentTitle');
-        titleEl.innerText = title;
-        titleEl.style.display = 'block';
-        
-        const cleanText = text.replace(/\[.*?\]/g, ' ');
-        allWords = cleanText.split(/\s+/).filter(w => w.length > 0);
-        
-        document.getElementById('info-bar').innerText = "Tổng: " + allWords.length + " từ";
-        
-        paragraphDiv.innerHTML = '';
-        allWords.forEach((w, i) => {
-            const s = document.createElement('span');
-            s.className = 'word'; s.innerText = w; s.id = `w-${i}`;
-            if(i===0) s.classList.add('active');
-            paragraphDiv.appendChild(s);
-        });
-        
-        currentWordIdx = 0; totalCorrect = 0; totalWrong = 0; isPlaying = false;
-        hiddenInput.value = ''; typingDisplay.innerText = '';
-        hiddenInput.focus();
-    }
+            ctx.font = 'bold 80px Arial'; // Font to
+            ctx.fillStyle = '#ff88aa';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = '#ff0055';
+            ctx.shadowBlur = 20;
 
-    // --- TYPING CORE ---
-    document.addEventListener('click', () => { if(document.getElementById('game-area').style.display==='flex') hiddenInput.focus(); });
+            // Vẽ chữ vào chính giữa canvas
+            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
-    hiddenInput.addEventListener('input', () => {
-        if(!isPlaying) { 
-            isPlaying = true; startTime = Date.now(); startChart();
-            // Ẩn tiêu đề khi bắt đầu gõ
-            document.getElementById('contentTitle').style.display = 'none';
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
         }
 
-        let val = hiddenInput.value;
-        if(val.includes(' ')) {
-            const spaceIdx = val.indexOf(' ');
-            const wordToSubmit = val.substring(0, spaceIdx);
-            const remaining = val.substring(spaceIdx + 1);
-            if(wordToSubmit.length >= 0) {
-                const target = allWords[currentWordIdx];
-                const el = document.getElementById(`w-${currentWordIdx}`);
-                if(wordToSubmit.toLowerCase() === target.toLowerCase()) {
-                    el.className = 'word done-correct'; totalCorrect += target.length + 1;
-                } else {
-                    el.className = 'word done-wrong'; totalWrong += target.length;
+        // --- BỤI KHÔNG GIAN (Nền xa) ---
+        function createSpaceDust() {
+            const geo = new THREE.BufferGeometry();
+            const pos = [];
+            for(let i=0; i<2000; i++) pos.push((Math.random()-0.5)*300, (Math.random()-0.5)*300, (Math.random()-0.5)*300);
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({color: 0xffffff, size: 0.8, transparent: true, opacity: 0.3});
+            const dust = new THREE.Points(geo, mat);
+            scene.add(dust);
+        }
+
+        function getSoftTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(16,16,0,16,16,16);
+            grad.addColorStop(0, 'rgba(255,255,255,1)');
+            grad.addColorStop(0.4, 'rgba(255,100,100,0.5)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0,0,32,32);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            controls.update(); 
+
+            // Nhịp tim
+            const beatValue = Math.pow(Math.sin(time * SETTINGS.pulseSpeed), 1);
+            const scale = 1 + beatValue * 0.1; 
+
+            if (heartSystem) {
+                const positions = heartSystem.geometry.attributes.position.array;
+                const originals = heartSystem.geometry.userData.originalPositions;
+                
+                for(let i=0; i<positions.length; i+=3) {
+                    const ox = originals[i];
+                    const oy = originals[i+1];
+                    const oz = originals[i+2];
+
+                    positions[i] = ox * scale;
+                    positions[i+1] = (oy - 5) * scale + 5;
+                    positions[i+2] = oz * scale;
                 }
-                currentWordIdx++;
-                if(currentWordIdx >= allWords.length) finishGame();
-                else {
-                    const next = document.getElementById(`w-${currentWordIdx}`);
-                    next.classList.add('active');
-                    if(next.offsetTop > paragraphDiv.scrollTop + 60) paragraphDiv.scrollTop = next.offsetTop - 30;
-                    document.getElementById('info-bar').innerText = "Còn lại: " + (allWords.length - currentWordIdx) + " từ";
-                }
+                heartSystem.geometry.attributes.position.needsUpdate = true;
             }
-            hiddenInput.value = remaining; typingDisplay.innerText = remaining; checkColor(remaining);
-        } else {
-            typingDisplay.innerText = val; checkColor(val);
+
+            // Xoay vòng chữ (Dùng rotation.y vì giờ nó là hình trụ đứng)
+            if(ring1) ring1.rotation.y += 0.005; // Quay chậm
+            if(ring2) ring2.rotation.y -= 0.003; // Quay ngược chiều
+
+            // Hiệu ứng cho đốm trắng
+            if(magicParticles) {
+                magicParticles.rotation.y += 0.002; // Cả hệ thống hạt xoay nhẹ
+                // Làm hạt nhấp nhô nhẹ
+                magicParticles.position.y = Math.sin(time * 0.5) * 1.5;
+            }
+
+            composer.render();
         }
-    });
-
-    function checkColor(val) {
-        if(currentWordIdx>=allWords.length) return;
-        typingDisplay.style.color = allWords[currentWordIdx].toLowerCase().startsWith(val.toLowerCase()) ? '#e2b714' : '#ca4754';
-    }
-
-    function startChart() {
-        chartInterval = setInterval(() => {
-            const m = (Date.now() - startTime)/60000;
-            if(m>0) {
-                const wpm = Math.round((totalCorrect/5)/m);
-                wpmHistory.push(wpm); labels.push(Math.round(m*60));
-            }
-        }, 1000);
-    }
-
-    function finishGame() {
-        clearInterval(chartInterval);
-        const m = (Date.now() - startTime)/60000;
-        const wpm = Math.round((totalCorrect/5)/m);
-        const acc = Math.round((totalCorrect/(totalCorrect+totalWrong))*100);
-        document.getElementById('game-area').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'flex';
-        document.getElementById('res-wpm').innerText = wpm;
-        document.getElementById('res-acc').innerText = isNaN(acc)?'0%':acc+'%';
-        new Chart(document.getElementById('wpmChart'), {
-            type:'line', data:{labels, datasets:[{label:'WPM', data:wpmHistory, borderColor:'#e2b714', backgroundColor:'rgba(226,183,20,0.1)', fill:true, tension:0.4}]},
-            options:{plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#444'}}, y:{grid:{color:'#444'}}}}
-        });
-    }
-    
-    document.addEventListener('keydown', (e) => {
-        const k = document.querySelector(`.key[data-c="${e.code}"]`);
-        if(k) k.classList.add('pressed');
-        if(e.key === 'Tab') { e.preventDefault(); location.reload(); }
-    });
-    document.addEventListener('keyup', (e) => {
-        const k = document.querySelector(`.key[data-c="${e.code}"]`);
-        if(k) k.classList.remove('pressed');
-    });
-</script>
+    </script>
 </body>
 </html>
